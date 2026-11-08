@@ -47,7 +47,7 @@
   .lx .lx-popimg img { display: block; width: 100%; height: 100%; object-fit: contain; }
   .lx .lx-popcap { display: flex; flex-direction: column; gap: 2px; margin-top: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); }
   .lx .lx-popcap b { font-weight: var(--cds-font-weight-medium); }
-  @container (max-width: 760px) { .lx .lx-table :is(th, td):nth-child(n+7) { display: none; } }
+  @container (max-width: 760px) { .lx .lx-table :is(th, td):nth-child(n+8) { display: none; } }
   @container (max-width: 480px) { .lx .lx-table :is(th, td):nth-child(n+5) { display: none; } }
 
   .lx .lx-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
@@ -73,6 +73,7 @@
     <h2>候補一覧</h2>
     <p class="lx-note" data-draw="tablenote" data-source="conditions">—</p>
     <p class="lx-note">物件名の左の図は間取り図です。カーソルを合わせる(スマホはタップ)と大きく表示します。</p>
+    <p class="lx-note">初期費用は、敷金・礼金・仲介手数料・初回保証料に、掲載にある初期費用(鍵交換など)と、金額の記載がある火災保険を足した目安です。前家賃と日割り家賃は含みません。仲介手数料の記載がない物件は1.1ヶ月分と仮定し、金額の下に注記を付けています。</p>
     <div class="lx-bar">
       <select class="dash-select" id="lx-group" data-lx="group" aria-label="構造">
         <option value="">すべての構造</option>
@@ -97,6 +98,7 @@
             <th data-field="station" data-sort-col="station" aria-sort="none"><button type="button">駅・徒歩</button></th>
             <th data-field="building" data-sort-col="building" aria-sort="none"><button type="button">物件</button></th>
             <th data-field="total" data-sort-col="total" aria-sort="none"><button type="button">総額(万円)</button></th>
+            <th data-field="initial" data-sort-col="initial" aria-sort="none"><button type="button">初期費用(万円)</button></th>
             <th data-field="area" data-sort-col="area" aria-sort="none"><button type="button">広さ(㎡)</button></th>
             <th data-field="age" data-sort-col="age" aria-sort="none"><button type="button">築</button></th>
             <th data-field="structure" data-sort-col="group" aria-sort="none"><button type="button">構造</button></th>
@@ -161,7 +163,7 @@
     const k = S.sort;
     return (a, b) => {
       const x = a[k]; const y = b[k];
-      const c = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y), 'ja');
+      const c = (typeof x === 'number' || typeof y === 'number') ? (x ?? 1e9) - (y ?? 1e9) : String(x).localeCompare(String(y), 'ja');
       return (c || a.total - b.total) * S.dir;
     };
   };
@@ -275,7 +277,7 @@
     popClose();
     const list = rows().filter(pass).sort(comparator());
     if (!list.length) {
-      const tr = document.createElement('tr'); const td = el('td', 'lx-empty', rows().length ? '条件に合う物件がありません。' : '候補を読み込み中です。'); td.colSpan = 10; tr.append(td);
+      const tr = document.createElement('tr'); const td = el('td', 'lx-empty', rows().length ? '条件に合う物件がありません。' : '候補を読み込み中です。'); td.colSpan = 11; tr.append(td);
       tb.replaceChildren(tr); return;
     }
     tb.replaceChildren(...list.map((r) => {
@@ -303,6 +305,7 @@
         cell(el('b', '', r.station), el('span', 'lx-sub', `${r.line}線 徒歩${r.walk}分`)),
         nameCell,
         totalCell,
+        r.initial == null ? cell('—') : cell(el('b', '', fmt0(r.initial)), r.initial_note ? el('span', 'lx-sub', r.initial_note) : ''),
         cell(fmt1(r.area)),
         cell(r.age === 0 ? '新築' : `${r.age}年`),
         cell(dot, r.structure),

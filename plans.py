@@ -10,6 +10,7 @@ import io
 import os
 import time
 
+import numpy as np
 import requests
 from PIL import Image
 
@@ -37,10 +38,22 @@ def to_webp(content):
     return out.getvalue()
 
 
+def looks_like_photo(webp_bytes):
+    """掲載元が「間取り図」の欄に建物や室内の写真を登録していることがある。間取り図は白地の面が多く、写真は白が少なく
+    階調がなだらかに変わる。この2つで見分ける (完全ではない。取りこぼしや、まれな誤判定はあり得る)。"""
+    im = Image.open(io.BytesIO(webp_bytes))
+    rgb = np.asarray(im.convert("RGB")).astype(int)
+    white = float((rgb > 235).all(axis=2).mean())
+    g = np.asarray(im.convert("L")).astype(float)
+    grad = np.maximum(np.abs(np.diff(g, axis=1))[:-1, :], np.abs(np.diff(g, axis=0))[:, :-1])
+    gentle = float(((grad >= 3) & (grad < 25)).mean())
+    return white < 0.10 and gentle > 0.30
+
+
 def build_plans(candidates, cache_dir, delay=0.8, log=print):
     """candidates: candidates.json の行。戻り値: [{'id', 'img'(data URI)}] (間取り図が無い物件は含めない)"""
     os.makedirs(cache_dir, exist_ok=True)
-    ses, out, fetched, missing = requests.Session(), [], 0, []
+    ses, out, fetched, missing, photos = requests.Session(), [], 0, [], []
     for r in candidates:
         path = os.path.join(cache_dir, r["id"] + ".webp")
         if not os.path.exists(path):
@@ -56,6 +69,11 @@ def build_plans(candidates, cache_dir, delay=0.8, log=print):
                 log(f"  間取り図を取得できず (スキップ): {r['id']} {e}")
                 continue
         with open(path, "rb") as f:
-            out.append({"id": r["id"], "img": "data:image/webp;base64," + base64.b64encode(f.read()).decode()})
-    log(f"間取り図 {len(out)}/{len(candidates)} 枚 (新規取得 {fetched}、取得できず {len(missing)})")
+            data = f.read()
+        if looks_like_photo(data):
+            photos.append(r["id"])
+            log(f"  間取り図の欄が写真だったため除外: {r['id']} {r['building']}")
+            continue
+        out.append({"id": r["id"], "img": "data:image/webp;base64," + base64.b64encode(data).decode()})
+    log(f"間取り図 {len(out)}/{len(candidates)} 枚 (新規取得 {fetched}、取得できず {len(missing)}、写真のため除外 {len(photos)})")
     return out
