@@ -134,12 +134,30 @@ def walk_on_lines(access: List[str], line_names) -> Optional[tuple]:
     """対象路線の駅のうち最短徒歩 (分, '路線/駅')。無ければ None"""
     best = None
     for t in access:
+        if "バス" in t:
+            continue
         m = re.match(r"(.+?)/(.+?)駅? 歩(\d+)分", t)
         if m and m.group(1) in line_names:
             w = int(m.group(3))
             if best is None or w < best[0]:
                 best = (w, f"{m.group(1)}/{m.group(2)}")
     return best
+
+
+def dedupe(rows: List[Dict]) -> List[Dict]:
+    """同一の部屋を複数社が掲載しているため、(住所,面積,間取り,賃料) で1件にまとめる（最安の総額を採用）"""
+    best: Dict[tuple, Dict] = {}
+    for r in rows:
+        k = (r["address"], r["area"], r["layout"], r["rent_yen"])
+        r["n_listings"] = 1
+        if k in best:
+            n = best[k]["n_listings"] + 1
+            if (r["total_yen"] or 10**9) < (best[k]["total_yen"] or 10**9):
+                best[k] = r
+            best[k]["n_listings"] = n
+        else:
+            best[k] = r
+    return list(best.values())
 
 
 def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print):
@@ -171,6 +189,7 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
             r["walk_min"], r["station"] = w
             r["access"] = " / ".join(r["access_list"])
             out.append(r)
+    out = dedupe(out)
     out.sort(key=lambda r: (r["total_yen"] or 0))
     return out, len(seen)
 
