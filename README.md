@@ -26,3 +26,11 @@ python search_sites.py --sites "HOME'S" --out h.csv
 
 - 各サイトの robots.txt で対象パスが許可されていることを確認済み（2026-11）。低頻度 (`--delay` 既定 1.5 秒) で利用すること。
 - 構造 (RC など) が一覧に出るのは CHINTAI のみ。HOME'S / at home は詳細ページが必要。
+
+## 検索から候補JSONまで (1コマンド)
+
+```bash
+python run.py        # 東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 35㎡以上 / 木造除外 -> data/candidates.json
+```
+
+詳細は `run.py --help` と `ARTIFACT.md` (アーティファクトへの反映手順)。
