@@ -3,3 +3,5 @@ __pycache__/
 *.csv
 data/plans/
 data/plans.json
+data/others_raw.json
+data/artifact_docs/

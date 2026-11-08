@@ -15,11 +15,10 @@ from typing import Dict, Iterator, List, Optional
 import requests
 from bs4 import BeautifulSoup
 
+import web
+
 BASE = "https://suumo.jp"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Accept-Language": "ja,en;q=0.8",
-}
+HEADERS = web.HEADERS
 # 例: 東京都新宿区 (sc=13104)。他区は sc を変える。ar=030(関東) bs=040(賃貸) ta=13(東京)
 SEARCH_URL = (
     "https://suumo.jp/jj/chintai/ichiran/FR301FC001/"
@@ -32,17 +31,8 @@ def clean(s: Optional[str]) -> str:
     return " ".join(s.split()) if s else ""
 
 
-def fetch(session: requests.Session, url: str, retries: int = 3) -> BeautifulSoup:
-    for i in range(retries):
-        try:
-            r = session.get(url, headers=HEADERS, timeout=20)
-            r.raise_for_status()
-            return BeautifulSoup(r.content, "html.parser")
-        except requests.RequestException as e:
-            if i == retries - 1:
-                raise
-            time.sleep(2 ** (i + 1))
-    raise RuntimeError("unreachable")
+def fetch(session: requests.Session, url: str, retries: int = web.RETRIES) -> BeautifulSoup:
+    return web.fetch_soup(session, url, None, retries)
 
 
 def parse_list(soup: BeautifulSoup) -> Iterator[Dict[str, str]]:
@@ -172,6 +162,17 @@ def dedupe(rows: List[Dict]) -> List[Dict]:
     return list(best.values())
 
 
+def check_coverage(label, hits, got, pages, max_pages, log=print):
+    """SUUMO が表示する該当件数 (hits) と、実際に集めた掲載数を比べる。同じ部屋の重複で、集まる数は hits より1〜2割少ないのが普通。
+    大きく少ない・ページ上限で打ち切られた場合は、取りこぼし (空の応答や上限不足) を疑って止める。"""
+    if hits and got < hits * 0.5:
+        raise RuntimeError(f"{label}: 該当 {hits} 件に対し {got} 件しか集まっていません (空の応答で打ち切られた可能性)")
+    if got and pages >= max_pages:
+        raise RuntimeError(f"{label}: --max-pages={max_pages} で打ち切られました。上限を増やしてください")
+    if hits and got < hits * 0.8:
+        log(f"  WARNING: {label}: 該当 {hits} 件に対し {got} 件 ({got / hits:.0%})。重複を除いた数としてはやや少なめです")
+
+
 def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print, min_photos=3):
     names = {LINES[l][1] for l in lines}
     wl = next((s for s in WALK_STEPS if s >= walk), 20)
@@ -181,11 +182,13 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
             ra, rn, ek = line_stations(session, pref, line)
             ek_q = "".join(f"&ek={e}" for e in ek)
             log(f"[{PREFS[pref]} {LINES[line][1]}] stations={len(ek)}")
+            before, hits_n = len(seen), 0
             for page in range(1, max_pages + 1):
                 url = LINE_URL.format(ra=ra, rn=rn, ek=ek_q, rent=f"{max_rent_man:.1f}", walk=wl, md=LAYOUT_CODES[layout], page=page)
                 soup = fetch(session, url)
                 if page == 1:
                     log(f"  hits: {total_hits(soup)}")
+                    hits_n = int(re.sub(r"\D", "", total_hits(soup)) or 0)
                 got = list(parse_rooms(soup))
                 if not got:
                     break
@@ -193,6 +196,7 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
                     seen.setdefault(r["url"], r)
                 time.sleep(delay)
             log(f"  pages={page} unique so far={len(seen)}")
+            check_coverage(f"{PREFS[pref]} {LINES[line][1]}", hits_n, len(seen) - before, page, max_pages, log)
     out = []
     few_photos = 0
     for r in seen.values():

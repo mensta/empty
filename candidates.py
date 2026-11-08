@@ -121,6 +121,9 @@ def estimate_initial(d, rent, admin):
         notes.append("保証料は含まず")
     biko = _n(d.get("biko", ""))
     fees = sum(float(x.replace(",", "")) for x in re.findall(r"[\(（]初期[\)）]\s*([\d,]+)円", biko)) / 10000
+    fees += d.get("init_fees_man", 0.0)
+    if d.get("fees_unknown"):
+        notes.append("鍵交換などの初期費用は含まず")
     sonpo = _amount_man(d.get("sonpo", ""), rent)
     val = (a or 0) + (b or 0) + mon * rent + (g or 0) + fees + (sonpo or 0)
     return round(val, 1), "・".join(notes)
@@ -142,6 +145,48 @@ def man(v):
     return round(float(v) / 10000, 2)
 
 
+def norm_structure(text):
+    """サイトごとの構造表記 ('RC(鉄筋コンクリート)' / 'ＲＣ' / '鉄筋コンクリート造' など) を SUUMO の表記にそろえる"""
+    t = _n(text)
+    if t.startswith(("RC", "SRC")) or "鉄筋コン" in t or "鉄骨鉄筋" in t:
+        return "鉄筋コン"
+    if "軽量鉄骨" in t:
+        return "軽量鉄骨"
+    if "ALC" in t or "気泡" in t:
+        return "気泡コン"
+    if "木造" in t or t.startswith("W"):
+        return "木造"
+    return "鉄骨" if "鉄骨" in t or t.startswith("S") else t
+
+
+def is_wood(d):
+    return "木造" in _n(d.get("structure", "")) or "構造は木造" in d.get("biko", "") or norm_structure(d.get("structure", "")) == "木造"
+
+
+def make_row(*, id, site, also, url, building, line, station, walk, rent_yen, admin_yen, total_yen, area, age, photos, d):
+    """SUUMO でも他サイトでも、候補1行を同じ形に組み立てる。d は詳細ページから読んだ内容 (構造・敷礼・保証・契約など)"""
+    structure = norm_structure(d["structure"])
+    name = unicodedata.normalize("NFKC", re.sub(r"\s*\d+号室$", "", building))
+    name = re.sub(r"\s*\d+階建$", "", name)
+    note = []
+    if re.match(r"^(東急\S+線 )?\S+駅 (.*階建|徒歩\d+分)", name):
+        note.append("物件名なし")
+    if "定期借家" in d["contract"]:
+        note.append("定期借家")
+    sk, rei = ([x.strip().replace("万円", "").replace("万", "") for x in (d["shiki_rei"] or "- / -").split("/")] + ["-", "-"])[:2]
+    initial, initial_note = estimate_initial(d, man(rent_yen), man(admin_yen or 0))
+    return {
+        "id": id, "site": site, "also": also,
+        "group": "RC" if structure == "鉄筋コン" else "鉄骨・ALC",
+        "line": line.replace("線", ""), "station": station, "walk": int(walk),
+        "building": name, "rent": man(rent_yen), "admin": man(admin_yen or 0), "total": man(total_yen),
+        "area": area, "age": int(age), "structure": structure, "floor": d["floor"],
+        "photos": int(photos), "shiki": sk, "rei": rei, "move_in": d["move_in"],
+        "initial": initial, "initial_note": initial_note,
+        "note": "・".join(note), "url": url,
+    }
+
+
 def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max_walk=7, delay=1.5, log=print):
     """rows: suumo_scraper の検索結果 (dict。CSV から読んだ文字列でも可)。構造の無い物件は詳細ページを取得する。"""
     pool = []
@@ -151,7 +196,7 @@ def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max
                 and int(r["walk_min"]) <= max_walk):
             pool.append({**r, "_area": area})
     cache = load_json(cache_path, {})
-    todo = [r for r in pool if cache.get(r["url"], {}).get("v") != CACHE_VERSION]
+    todo = [r for r in pool if cache.get(r["url"], {}).get("v") != CACHE_VERSION or not cache[r["url"]].get("structure")]
     log(f"候補プール {len(pool)} 室 (詳細ページを新規取得: {len(todo)} 件)")
     ses, failed = requests.Session(), 0
     for i, r in enumerate(todo, 1):
@@ -169,35 +214,22 @@ def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max
     out = []
     for r in sorted(pool, key=lambda r: int(r["total_yen"])):
         d = cache.get(r["url"])
-        if d is None or "木造" in d["structure"] or "構造は木造" in d["biko"]:
+        if d is None or is_wood(d):
             continue
         line, st = r["station"].replace("東急", "").split("/")
-        name = unicodedata.normalize("NFKC", re.sub(r"\s*\d+号室$", "", r["building"]))
-        note = []
-        if re.match(r"^(東急\S+線 )?\S+駅 .*階建", name):
-            note.append("物件名なし")
-        if "定期借家" in d["contract"]:
-            note.append("定期借家")
-        sk, rei = ([x.strip().replace("万円", "").replace("万", "") for x in (d["shiki_rei"] or "- / -").split("/")] + ["-", "-"])[:2]
-        initial, initial_note = estimate_initial(d, man(r["rent_yen"]), man(r["admin_yen"] or 0))
-        out.append({
-            "id": r["url"].rstrip("/").split("/")[-1],
-            "group": "RC" if d["structure"].startswith(RC_PREFIX) else "鉄骨・ALC",
-            "line": line.replace("線", ""), "station": st, "walk": int(r["walk_min"]),
-            "building": name, "rent": man(r["rent_yen"]), "admin": man(r["admin_yen"] or 0), "total": man(r["total_yen"]),
-            "area": r["_area"], "age": int(r["age"]), "structure": d["structure"], "floor": d["floor"],
-            "photos": int(r["n_photos"]), "shiki": sk, "rei": rei, "move_in": d["move_in"],
-            "initial": initial, "initial_note": initial_note,
-            "note": "・".join(note), "url": r["url"],
-        })
+        out.append(make_row(
+            id=r["url"].rstrip("/").split("/")[-1], site="SUUMO", also="", url=r["url"], building=r["building"],
+            line=line, station=st, walk=r["walk_min"], rent_yen=r["rent_yen"], admin_yen=r["admin_yen"] or 0,
+            total_yen=r["total_yen"], area=r["_area"], age=r["age"], photos=r["n_photos"], d=d))
     return out
 
 
-def make_conditions(layout, max_rent, lines, prefs, walk, max_age, min_area, min_photos):
+def make_conditions(layout, max_rent, lines, prefs, walk, max_age, min_area, min_photos, sites="SUUMO"):
     """画面上部の検索条件。run.py に渡した条件から作るので、表示と実際の検索条件がずれない"""
     line_names = "・".join(m.LINES[l][1] for l in lines)
     pref_names = "・".join(m.PREFS[p] for p in prefs)
     return [
+        {"key": "sites", "label": "掲載サイト", "text": sites},
         {"key": "layout", "label": "間取り", "text": layout},
         {"key": "rent_max", "label": "家賃", "text": f"{max_rent:g}万円以下", "value": max_rent},
         {"key": "line", "label": "沿線", "text": f"{line_names}({pref_names})"},

@@ -1,5 +1,7 @@
 # 物件候補アーティファクトの更新手順
 
+(取得まわりの落とし穴は `LESSONS.md`、作業の前提は `CLAUDE.md`)
+
 - アーティファクト: https://claude.ai/artifact/FGVqc2su3LU2XfoQKZMjHX （Dashboard タイプ。ページ本体とデータは別）
 - ページ (`files/index.html`) は **データを読んで描くだけ**。候補の入れ替えでは触らない。
 - データは3つの JSON ファイル (行オブジェクトの配列)。それぞれ `datasets/<名前>` が参照する:
@@ -10,7 +12,7 @@
   | `plans` | `data/plans.json` | 間取り図 (縮小 WebP の data: URI、物件IDで candidates と対応。約1MB。git 管理外) |
   | `conditions` | `data/conditions.json` | 画面上部の検索条件。`rent_max` の `value` は総額の橙色表示と「総額○万円以内」の基準にも使う |
 
-  すべて `python run.py` が作る。`data/detail_cache.json` は詳細ページのキャッシュ、`data/plans/` は間取り図のキャッシュ。
+  すべて `python run.py` が作る (書き出す前に `validate.py` が検証し、エラーなら上書きしない)。`data/detail_cache.json` は詳細ページのキャッシュ、`data/plans/` は間取り図のキャッシュ。
 - ページは外部サイトの画像を読み込めない (CSP) ので、間取り図は手元で取得して縮小し、データとして持たせている。
   掲載元が「間取り図」の欄に写真を登録していることがあるため、白地の割合と階調の変化で写真らしい画像は外す (`plans.py` の `looks_like_photo`。
   元画像の画素数では見分けられなかった: SUUMO が画像を約800pxにそろえているため。完全ではないので、気づいたら除外する物件を教えてもらう)。
@@ -22,16 +24,19 @@
 
 1. データを作る (検索 -> 候補 -> 間取り図 -> 条件を1コマンドで。約7分)
    ```bash
-   python run.py                              # 既定: 東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 28㎡より広い
+   python run.py                              # 既定: 東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 28㎡より広い。SUUMO + HOME'S・at home・CHINTAI
    python run.py --prefs tokyo kanagawa --walk 10 --max-age 35   # 条件を変える (画面上部の条件表示も自動で変わる)
-   python run.py --from-csv raw.csv           # 検索済みの結果 (--raw raw.csv で保存) から候補以降を作り直す。数秒
+   python run.py --from-csv raw.csv           # SUUMO の検索済みの結果 (--raw raw.csv で保存) から作り直す。他サイトは --reuse-others で省略可
+   python run.py --no-others                  # SUUMO だけにする
    ```
    検索結果や候補が0件のときは何も上書きしない。少しの修正 (1行消す・メモを足す) なら `data/candidates.json` を直接編集してよい。
 2. JSON を1つずつ `Artifact` (`url` = 上のURL, `asset: true`, `file_path` = そのファイル) でアップロード → `/_blob/<id>` が返る。
    JSON は1回の呼び出しに1ファイルずつ。`candidates.json` / `plans.json` / `conditions.json` の3回。
-3. `ArtifactData` の `batch` で `datasets/candidates`・`datasets/plans`・`datasets/conditions` を `update`
-   (`if_version` は各ドキュメントの現在の version。分からなければ `get` で読む。ドキュメントは小さい):
-   `{"source": {"kind": "file", "url": "/_blob/<id>", "name": "<file>", "format": "json"}, "updated": {"at": "<UTC ISO>", "by": "Claude"}, "edit": {"via": "claude", "at": "<UTC ISO>"}}`
+3. 反映用のドキュメントを作り、`ArtifactData` の `batch` で `datasets/*` を `update` する:
+   ```bash
+   python artifact_docs.py --candidates <blob id> --plans <blob id> --conditions <blob id>   # ページも直したときは --page
+   ```
+   表示された `writes` の `if_version` に、各ドキュメントの現在の version を入れる (分からなければ `ArtifactData` の `get`。ドキュメントは小さい)。
 4. 古い `/_blob/<id>` を `Artifact` の `action: delete` + `path: <id>` で削除 (参照されなくなったので)。
 
 ## ページを直す

@@ -20,7 +20,9 @@ QUALITY = 72
 
 
 def plan_url(item_id):
-    """'bc_100535325727' -> 間取り図の URL"""
+    """SUUMO の物件ID 'bc_100535325727' -> 間取り図の URL"""
+    if not item_id.startswith("bc_"):
+        raise ValueError(f"SUUMO 以外の物件には URL の規則がない: {item_id}")
     bc = item_id.split("_", 1)[1]
     return f"https://img01.suumo.com/front/gazo/fr/bukken/{bc[-3:]}/{bc}/{bc}_co.jpg"
 
@@ -50,7 +52,7 @@ def looks_like_photo(webp_bytes):
     return white < 0.10 and gentle > 0.30
 
 
-def build_plans(candidates, cache_dir, delay=0.8, log=print):
+def build_plans(candidates, cache_dir, delay=0.8, log=print, plan_urls=None):
     """candidates: candidates.json の行。戻り値: [{'id', 'img'(data URI)}] (間取り図が無い物件は含めない)"""
     os.makedirs(cache_dir, exist_ok=True)
     ses, out, fetched, missing, photos = requests.Session(), [], 0, [], []
@@ -58,7 +60,8 @@ def build_plans(candidates, cache_dir, delay=0.8, log=print):
         path = os.path.join(cache_dir, r["id"] + ".webp")
         if not os.path.exists(path):
             try:
-                resp = ses.get(plan_url(r["id"]), headers=HEADERS, timeout=30)
+                url = (plan_urls or {}).get(r["id"]) or plan_url(r["id"])  # 他サイトの物件は詳細ページから読んだ URL
+                resp = ses.get(url, headers=HEADERS, timeout=30)
                 resp.raise_for_status()
                 with open(path, "wb") as f:
                     f.write(to_webp(resp.content))
