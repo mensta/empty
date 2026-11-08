@@ -49,31 +49,40 @@ def best_walk(access, lines):
 
 
 def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print):
-    """3サイトの一覧を最後のページまで集める。戻り値: 物件のリスト (サイト内で URL の重複なし)"""
-    got = {}
+    """3サイトの一覧を最後のページまで集める。戻り値: (物件のリスト, 取得できなかったサイト)。
+    あるサイトで取得に失敗し続けたら (アクセス制限など)、そのサイトは今回は丸ごと外して続ける。
+    SUUMO が本体で、他サイトは補助のため。取得できなかったことは呼び出し側が表示に反映する。"""
+    got, failed = {}, []
     for site, (tmpl, slugs, fn) in TARGETS.items():
         if only and site not in only:
             continue
         for line in lines:
-            ses, n_before = requests.Session(), len(got)  # サイト・路線ごとに新しい接続 (Cookie の持ち越しを避ける)
-            for page in range(1, max_pages + 1):
-                url, params = page_url(site, tmpl.format(line=slugs[line]), page, max_rent, walk)
-                try:
-                    rows = list(fn(sites.fetch(ses, url, params)))
-                except requests.HTTPError as e:
-                    if e.response is not None and e.response.status_code == 404:  # 最終ページの次
+            if site in failed:
+                break
+            ses, n_before = requests.Session(), len(got)  # サイト・路線ごとに新しい接続
+            try:
+                for page in range(1, max_pages + 1):
+                    url, params = page_url(site, tmpl.format(line=slugs[line]), page, max_rent, walk)
+                    try:
+                        rows = list(fn(sites.fetch(ses, url, params)))
+                    except requests.HTTPError as e:
+                        if e.response is not None and e.response.status_code == 404:  # 最終ページの次
+                            break
+                        raise
+                    new = [r for r in rows if (site, r["url"]) not in got]
+                    for r in rows:
+                        got.setdefault((site, r["url"]), r)
+                    if page == 1 and not rows:
+                        raise RuntimeError("1ページ目が空でした")
+                    if not new:
                         break
-                    raise
-                new = [r for r in rows if (site, r["url"]) not in got]
-                for r in rows:
-                    got.setdefault((site, r["url"]), r)
-                if page == 1 and not rows:
-                    log(f"  WARNING: {site} {line} の1ページ目が空でした")
-                if not new:
-                    break
-                time.sleep(delay)
-            log(f"  {site} {line}: {page} ページ、{len(got) - n_before} 件")
-    return list(got.values())
+                    time.sleep(delay)
+                log(f"  {site} {line}: {page} ページ、{len(got) - n_before} 件")
+            except RuntimeError as e:
+                failed.append(site)
+                log(f"  WARNING: {site} は取得できませんでした。今回は {site} を含めません ({str(e)[:90]})")
+    got = {k: v for k, v in got.items() if k[0] not in failed}
+    return list(got.values()), failed
 
 
 def filter_rows(rows, lines, layout, max_rent, walk, max_age, min_area, pref_prefix="東京都"):
@@ -100,7 +109,7 @@ def main() -> int:
     ap.add_argument("--delay", type=float, default=1.5)
     ap.add_argument("--out", default="sites.csv")
     a = ap.parse_args()
-    rows = collect(a.lines, a.max_rent, a.walk, delay=a.delay, log=lambda m: print(m, file=sys.stderr))
+    rows, _ = collect(a.lines, a.max_rent, a.walk, delay=a.delay, log=lambda m: print(m, file=sys.stderr))
     out = filter_rows(rows, a.lines, a.layout, a.max_rent, a.walk, a.max_age, a.min_area)
     for r in out:
         r["access"] = " / ".join(r["access"])

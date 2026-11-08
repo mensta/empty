@@ -1,6 +1,8 @@
 [
  {
   "id": "bc_100519991645",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -23,30 +25,9 @@
   "url": "https://suumo.jp/chintai/bc_100519991645/"
  },
  {
-  "id": "bc_100533608689",
-  "group": "鉄骨・ALC",
-  "line": "東横",
-  "station": "都立大学",
-  "walk": 7,
-  "building": "STELLA都立大学",
-  "rent": 13.6,
-  "admin": 0.6,
-  "total": 14.2,
-  "area": 30.19,
-  "age": 6,
-  "structure": "軽量鉄骨",
-  "floor": "2階/3階建",
-  "photos": 13,
-  "shiki": "13.6",
-  "rei": "13.6",
-  "move_in": "26年12月中旬",
-  "initial": 51.0,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100533608689/"
- },
- {
   "id": "bc_100535844409",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "都立大学",
@@ -70,6 +51,8 @@
  },
  {
   "id": "bc_100531505196",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "洗足",
@@ -93,6 +76,8 @@
  },
  {
   "id": "bc_100532557312",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -116,6 +101,8 @@
  },
  {
   "id": "bc_100514254048",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "西小山",
@@ -139,6 +126,8 @@
  },
  {
   "id": "bc_100519467018",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -162,6 +151,8 @@
  },
  {
   "id": "bc_100522961372",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -185,6 +176,8 @@
  },
  {
   "id": "bc_100518967333",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "自由が丘",
@@ -208,6 +201,8 @@
  },
  {
   "id": "bc_100534074082",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -231,6 +226,8 @@
  },
  {
   "id": "bc_100534537725",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -254,6 +251,8 @@
  },
  {
   "id": "bc_100533811085",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -277,6 +276,8 @@
  },
  {
   "id": "bc_100524003865",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "祐天寺",
@@ -300,6 +301,8 @@
  },
  {
   "id": "bc_100535840147",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "都立大学",
@@ -323,6 +326,8 @@
  },
  {
   "id": "bc_100534954610",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "西小山",
@@ -346,6 +351,8 @@
  },
  {
   "id": "bc_100529870362",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -369,6 +376,8 @@
  },
  {
   "id": "bc_100535039527",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "自由が丘",
@@ -392,6 +401,8 @@
  },
  {
   "id": "bc_100532183184",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -415,6 +426,8 @@
  },
  {
   "id": "bc_100533688339",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "学芸大学",
@@ -438,6 +451,8 @@
  },
  {
   "id": "bc_100531308913",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "西小山",
@@ -461,6 +476,8 @@
  },
  {
   "id": "bc_100530923031",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -484,6 +501,8 @@
  },
  {
   "id": "bc_100536043189",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -507,6 +526,8 @@
  },
  {
   "id": "bc_100535829963",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -530,6 +551,8 @@
  },
  {
   "id": "bc_100524958525",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -553,6 +576,8 @@
  },
  {
   "id": "bc_100535593796",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "学芸大学",
@@ -576,6 +601,8 @@
  },
  {
   "id": "bc_100533214498",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -599,6 +626,8 @@
  },
  {
   "id": "bc_100533335282",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -622,6 +651,8 @@
  },
  {
   "id": "bc_100522830012",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -645,6 +676,8 @@
  },
  {
   "id": "bc_100522550676",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "大岡山",
@@ -668,6 +701,8 @@
  },
  {
   "id": "bc_100527704603",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "大岡山",
@@ -691,6 +726,8 @@
  },
  {
   "id": "bc_100535836843",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -714,6 +751,8 @@
  },
  {
   "id": "bc_100529794029",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -737,6 +776,8 @@
  },
  {
   "id": "bc_100527838272",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",
@@ -760,6 +801,8 @@
  },
  {
   "id": "bc_100531675144",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -783,6 +826,8 @@
  },
  {
   "id": "bc_100535204151",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "洗足",
@@ -806,6 +851,8 @@
  },
  {
   "id": "bc_100535514166",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "西小山",
@@ -829,6 +876,8 @@
  },
  {
   "id": "bc_100534955310",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "西小山",
@@ -852,6 +901,8 @@
  },
  {
   "id": "bc_100533775218",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "自由が丘",
@@ -875,6 +926,8 @@
  },
  {
   "id": "bc_100535988467",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -897,30 +950,9 @@
   "url": "https://suumo.jp/chintai/bc_100535988467/"
  },
  {
-  "id": "bc_100529780759",
-  "group": "RC",
-  "line": "東横",
-  "station": "都立大学",
-  "walk": 6,
-  "building": "プレジリア柿の木坂",
-  "rent": 16.0,
-  "admin": 1.5,
-  "total": 17.5,
-  "area": 33.49,
-  "age": 8,
-  "structure": "鉄筋コン",
-  "floor": "1階/地下1地上3階建",
-  "photos": 13,
-  "shiki": "16",
-  "rei": "16",
-  "move_in": "26年11月下旬",
-  "initial": 58.4,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100529780759/"
- },
- {
   "id": "bc_100496563663",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -943,7 +975,34 @@
   "url": "https://suumo.jp/chintai/bc_100496563663/"
  },
  {
+  "id": "bc_100529629385",
+  "site": "SUUMO",
+  "also": "",
+  "group": "RC",
+  "line": "東横",
+  "station": "都立大学",
+  "walk": 6,
+  "building": "東急東横線 都立大学駅 地下1地上3階建 築8年",
+  "rent": 16.0,
+  "admin": 1.5,
+  "total": 17.5,
+  "area": 33.49,
+  "age": 8,
+  "structure": "鉄筋コン",
+  "floor": "1階/地下1地上3階建",
+  "photos": 13,
+  "shiki": "16",
+  "rei": "16",
+  "move_in": "26年11月下旬",
+  "initial": 60.0,
+  "initial_note": "仲手は1.1ヶ月と仮定",
+  "note": "物件名なし",
+  "url": "https://suumo.jp/chintai/bc_100529629385/"
+ },
+ {
   "id": "bc_100520000169",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "都立大学",
@@ -967,6 +1026,8 @@
  },
  {
   "id": "bc_100536024523",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "洗足",
@@ -990,6 +1051,8 @@
  },
  {
   "id": "bc_100535838465",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",
@@ -1013,6 +1076,8 @@
  },
  {
   "id": "bc_100534071236",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "西小山",
@@ -1036,6 +1101,8 @@
  },
  {
   "id": "bc_100534003035",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -1059,6 +1126,8 @@
  },
  {
   "id": "bc_100513585367",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "祐天寺",
@@ -1082,6 +1151,8 @@
  },
  {
   "id": "bc_100535699821",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -1105,6 +1176,8 @@
  },
  {
   "id": "bc_100535138279",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "都立大学",
@@ -1128,6 +1201,8 @@
  },
  {
   "id": "bc_100534723887",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -1151,6 +1226,8 @@
  },
  {
   "id": "bc_100536135768",
+  "site": "SUUMO",
+  "also": "CHINTAI・at home",
   "group": "RC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -1174,6 +1251,8 @@
  },
  {
   "id": "bc_100524494714",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -1197,6 +1276,8 @@
  },
  {
   "id": "bc_100316869820",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "大岡山",
@@ -1220,6 +1301,8 @@
  },
  {
   "id": "bc_100529198610",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",
@@ -1243,6 +1326,8 @@
  },
  {
   "id": "bc_100534468262",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
@@ -1266,6 +1351,8 @@
  },
  {
   "id": "bc_100533864481",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "都立大学",
@@ -1289,6 +1376,8 @@
  },
  {
   "id": "bc_100535888454",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "学芸大学",
@@ -1312,6 +1401,8 @@
  },
  {
   "id": "bc_100535836520",
+  "site": "SUUMO",
+  "also": "CHINTAI・at home",
   "group": "RC",
   "line": "東横",
   "station": "学芸大学",
@@ -1335,6 +1426,8 @@
  },
  {
   "id": "bc_100528823191",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",
@@ -1358,6 +1451,8 @@
  },
  {
   "id": "bc_100518132836",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "都立大学",
@@ -1381,6 +1476,8 @@
  },
  {
   "id": "bc_100535934376",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "自由が丘",
@@ -1404,6 +1501,8 @@
  },
  {
   "id": "bc_100534827785",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "自由が丘",
@@ -1427,6 +1526,8 @@
  },
  {
   "id": "bc_100528506962",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "奥沢",
@@ -1450,6 +1551,8 @@
  },
  {
   "id": "bc_100536104696",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -1473,6 +1576,8 @@
  },
  {
   "id": "bc_100536097746",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
@@ -1496,6 +1601,8 @@
  },
  {
   "id": "bc_100498597374",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",
@@ -1519,6 +1626,8 @@
  },
  {
   "id": "bc_100535434936",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "不動前",
@@ -1542,6 +1651,8 @@
  },
  {
   "id": "bc_100506799555",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -1564,7 +1675,34 @@
   "url": "https://suumo.jp/chintai/bc_100506799555/"
  },
  {
+  "id": "ch_C010099981111080075189990001",
+  "site": "CHINTAI",
+  "also": "",
+  "group": "RC",
+  "line": "目黒",
+  "station": "洗足",
+  "walk": 2,
+  "building": "ポラスト洗足",
+  "rent": 17.1,
+  "admin": 1.5,
+  "total": 18.6,
+  "area": 34.04,
+  "age": 20,
+  "structure": "鉄筋コン",
+  "floor": "1階/4階建",
+  "photos": 14,
+  "shiki": "1ヶ月",
+  "rei": "-",
+  "move_in": "即入居",
+  "initial": 45.2,
+  "initial_note": "仲手は1.1ヶ月と仮定",
+  "note": "",
+  "url": "https://www.chintai.net/detail/bk-C010099981111080075189990001/"
+ },
+ {
   "id": "bc_100535992424",
+  "site": "SUUMO",
+  "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "都立大学",
@@ -1588,6 +1726,8 @@
  },
  {
   "id": "bc_100535839011",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "RC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -1610,7 +1750,34 @@
   "url": "https://suumo.jp/chintai/bc_100535839011/"
  },
  {
+  "id": "bc_100524261176",
+  "site": "SUUMO",
+  "also": "",
+  "group": "RC",
+  "line": "東横",
+  "station": "自由が丘",
+  "walk": 7,
+  "building": "aLATO自由が丘",
+  "rent": 17.9,
+  "admin": 1.0,
+  "total": 18.9,
+  "area": 32.71,
+  "age": 0,
+  "structure": "鉄筋コン",
+  "floor": "2階/5階建",
+  "photos": 12,
+  "shiki": "-",
+  "rei": "-",
+  "move_in": "即",
+  "initial": 22.0,
+  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
+  "note": "",
+  "url": "https://suumo.jp/chintai/bc_100524261176/"
+ },
+ {
   "id": "bc_100535838765",
+  "site": "SUUMO",
+  "also": "at home",
   "group": "RC",
   "line": "目黒",
   "station": "西小山",
@@ -1633,7 +1800,9 @@
   "url": "https://suumo.jp/chintai/bc_100535838765/"
  },
  {
-  "id": "bc_100531895802",
+  "id": "bc_100531893264",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -1653,10 +1822,12 @@
   "initial": 28.6,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100531895802/"
+  "url": "https://suumo.jp/chintai/bc_100531893264/"
  },
  {
   "id": "bc_100527313211",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "東横",
   "station": "自由が丘",
@@ -1680,6 +1851,8 @@
  },
  {
   "id": "bc_100487926058",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -1703,6 +1876,8 @@
  },
  {
   "id": "bc_100535830919",
+  "site": "SUUMO",
+  "also": "CHINTAI・at home",
   "group": "RC",
   "line": "目黒",
   "station": "武蔵小山",
@@ -1726,6 +1901,8 @@
  },
  {
   "id": "bc_100524494717",
+  "site": "SUUMO",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "奥沢",
@@ -1748,7 +1925,34 @@
   "url": "https://suumo.jp/chintai/bc_100524494717/"
  },
  {
+  "id": "ch_C010086990000005115186090001",
+  "site": "CHINTAI",
+  "also": "",
+  "group": "RC",
+  "line": "目黒",
+  "station": "武蔵小山",
+  "walk": 4,
+  "building": "LAPiS目黒本町",
+  "rent": 18.0,
+  "admin": 1.1,
+  "total": 19.1,
+  "area": 41.74,
+  "age": 10,
+  "structure": "鉄筋コン",
+  "floor": "5階/5階建",
+  "photos": 22,
+  "shiki": "-",
+  "rei": "1ヶ月",
+  "move_in": "即入居",
+  "initial": 38.0,
+  "initial_note": "仲手は1.1ヶ月と仮定",
+  "note": "",
+  "url": "https://www.chintai.net/detail/bk-C010086990000005115186090001/"
+ },
+ {
   "id": "bc_100535834202",
+  "site": "SUUMO",
+  "also": "CHINTAI・at home",
   "group": "RC",
   "line": "東横",
   "station": "学芸大学",
@@ -1772,6 +1976,8 @@
  },
  {
   "id": "bc_100516880270",
+  "site": "SUUMO",
+  "also": "",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",

@@ -72,6 +72,7 @@
   <section class="lx-card" id="list">
     <h2>候補一覧</h2>
     <p class="lx-note" data-draw="tablenote" data-source="conditions">—</p>
+    <p class="lx-note">リンクは「掲載」の先頭のサイトのページです。同じ部屋が複数のサイトに載っているときは、SUUMOを優先し、続けて他のサイトを並べています。</p>
     <p class="lx-note">物件名の左の図は間取り図です。カーソルを合わせる(スマホはタップ)と大きく表示します。</p>
     <p class="lx-note">初期費用は、敷金・礼金・仲介手数料・初回保証料に、掲載にある初期費用(鍵交換など)と、金額の記載がある火災保険を足した目安です。前家賃と日割り家賃は含みません。仲介手数料の記載がない物件は1.1ヶ月分と仮定し、金額の下に注記を付けています。</p>
     <div class="lx-bar">
@@ -286,6 +287,7 @@
       const name = el('a', 'lx-name', r.building); name.href = r.url;
       const text = el('div', 'lx-nametext'); text.append(name);
       if (r.note) r.note.split('・').forEach((n) => text.append(el('span', 'lx-tag', n)));
+      text.append(el('span', 'lx-sub', `掲載: ${[r.site].concat(r.also ? r.also.split('・') : []).join('・')}`));
       const thumb = el('button', 'lx-plan'); thumb.type = 'button';
       const src = plans.get(r.id);
       if (src) {

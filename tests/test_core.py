@@ -200,3 +200,27 @@ class TestValidate(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCollectDegrades(unittest.TestCase):
+    """あるサイトが取得できなくても、他のサイトの結果は使って続ける (取得できなかったサイトは丸ごと外す)"""
+
+    def test_failed_site_is_dropped_and_others_kept(self):
+        import search_sites as ss
+        orig_fetch, orig_targets = ss.sites.fetch, ss.TARGETS
+        try:
+            def fake_fetch(ses, url, params=None):
+                if "homes" in url:
+                    raise RuntimeError("202が続いた")
+                return url
+            ss.sites.fetch = fake_fetch
+            ss.TARGETS = {
+                "HOME'S": ("https://www.homes.co.jp/{line}/", {"toyoko": "t", "meguro": "m"}, lambda u: []),
+                "CHINTAI": ("https://www.chintai.net/{line}/", {"toyoko": "t", "meguro": "m"},
+                            lambda u: [{"url": u, "site": "CHINTAI"}] if "page" not in u else []),
+            }
+            rows, failed = ss.collect(["toyoko", "meguro"], 18, 7, max_pages=3, delay=0, log=lambda m: None)
+        finally:
+            ss.sites.fetch, ss.TARGETS = orig_fetch, orig_targets
+        self.assertEqual(failed, ["HOME'S"])
+        self.assertTrue(rows and all(r["site"] == "CHINTAI" for r in rows))

@@ -105,7 +105,7 @@ def main() -> int:
             raw = cand.load_json(raw_path, [])
             log(f"      検索を省略: {raw_path} から {len(raw)} 件")
         else:
-            raw = ss.collect(a.lines, a.max_rent, a.walk, a.max_pages, a.delay, log=log)
+            raw, _failed = ss.collect(a.lines, a.max_rent, a.walk, a.max_pages, a.delay, log=log)
             cand.save_json(raw_path, raw)
         found = ss.filter_rows(raw, a.lines, a.layout, a.max_rent, a.walk, a.max_age, a.min_area)
         log(f"      条件に合う部屋: {len(found)} 件")
@@ -118,7 +118,9 @@ def main() -> int:
         for r in out:  # SUUMO の部屋が他サイトにも載っていれば記録
             r["also"] = "・".join(present.get(suumo_key[r["id"]], []))
         out = sorted(out + extra, key=lambda r: r["total"])
-        site_names = "SUUMO・HOME'S・at home・CHINTAI"
+        used = [n for n in ("HOME'S", "at home", "CHINTAI") if any(r["site"] == n for r in raw)]
+        site_names = "・".join(["SUUMO"] + used)  # 実際に取得できたサイトだけを表示に出す
+        log(f"      使ったサイト: {site_names}")
 
     # 4) 間取り図
     log("[4/5] 間取り図を取得")
