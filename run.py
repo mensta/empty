@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """検索から候補JSONまでを1コマンドで行う。
 
-    python run.py                                   # 既定: 東急東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 35㎡以上
+    python run.py                                   # 既定: 東急東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 28㎡より広い
     python run.py --prefs tokyo kanagawa --walk 10  # 条件を変える
     python run.py --from-csv result.csv             # 検索済みの CSV から候補だけ作り直す (検索を省く)
 
 出力 (--out-dir、既定 data/):
     candidates.json  候補の部屋 (1行 = 1部屋。木造を除外、RC / 鉄骨・ALC に分類)
+    plans.json       間取り図 (縮小した WebP を data: URI で。ページは外部画像を読めないため)
     conditions.json  画面上部に出す検索条件 (このコマンドに渡した条件から作る)
     detail_cache.json  詳細ページのキャッシュ (次回は新しく出た物件の分だけ取得)
 
@@ -22,6 +23,7 @@ import time
 import requests
 
 import candidates as cand
+import plans
 import suumo_scraper as sc
 
 
@@ -46,7 +48,7 @@ def main() -> int:
     ap.add_argument("--max-rent", type=float, default=18.0, help="家賃の上限(万円)")
     ap.add_argument("--walk", type=int, default=7, help="駅徒歩の上限(分)")
     ap.add_argument("--max-age", type=int, default=20, help="築年数の上限")
-    ap.add_argument("--min-area", type=float, default=35.0, help="専有面積の下限(㎡)")
+    ap.add_argument("--min-area", type=float, default=28.0, help="専有面積がこの値(㎡)より広い部屋だけ")
     ap.add_argument("--min-photos", type=int, default=3, help="間取り図・周辺写真を除く写真の最低枚数 (0 で無効)")
     ap.add_argument("--max-pages", type=int, default=130)
     ap.add_argument("--delay", type=float, default=1.5, help="リクエスト間隔(秒)")
@@ -62,9 +64,9 @@ def main() -> int:
     # 1) 検索
     if a.from_csv:
         rows = list(csv.DictReader(open(a.from_csv, encoding="utf-8-sig")))
-        log(f"[1/3] 検索を省略: {a.from_csv} から {len(rows)} 件")
+        log(f"[1/4] 検索を省略: {a.from_csv} から {len(rows)} 件")
     else:
-        log("[1/3] SUUMO を検索")
+        log("[1/4] SUUMO を検索")
         rows, total = sc.search_lines(requests.Session(), a.lines, a.prefs, a.layout, a.max_rent, a.walk, a.max_age,
                                       a.delay, a.max_pages, log=log, min_photos=a.min_photos)
         log(f"      掲載 {total} 件を取得 -> 条件に合う部屋 {len(rows)} 室")
@@ -76,25 +78,30 @@ def main() -> int:
         return 1
 
     # 2) 候補 (詳細ページで構造を調べ、木造を除く)
-    log("[2/3] 候補を作る")
+    log("[2/4] 候補を作る")
     prefix = cand.PREF_PREFIX[a.prefs[0]] if len(a.prefs) == 1 else ""
     out = cand.build_candidates(rows, cache, prefix, a.max_age, a.min_area, a.walk, a.delay, log=log)
     if not out:
         log("候補が0件でした (全て木造、または条件外)。既存の出力は変更していません。")
         return 1
 
-    # 3) 書き出し (前回との差も表示)
-    log("[3/3] 書き出し")
+    # 3) 間取り図
+    log("[3/4] 間取り図を取得")
+    plan_rows = plans.build_plans(out, os.path.join(out_dir, "plans"), log=log)
+
+    # 4) 書き出し (前回との差も表示)
+    log("[4/4] 書き出し")
     cand_path = os.path.join(out_dir, "candidates.json")
     prev = {r["id"] for r in cand.load_json(cand_path, [])}
     cand.save_json(cand_path, out)
+    cand.save_json(os.path.join(out_dir, "plans.json"), plan_rows)
     cand.save_json(os.path.join(out_dir, "conditions.json"),
                    cand.make_conditions(a.layout, a.max_rent, a.lines, a.prefs, a.walk, a.max_age, a.min_area, a.min_photos))
     now = {r["id"] for r in out}
     groups = {g: sum(r["group"] == g for r in out) for g in ("RC", "鉄骨・ALC")}
     log(f"完了 ({time.time() - t0:.0f} 秒): 候補 {len(out)} 室 (RC {groups['RC']} / 鉄骨・ALC {groups['鉄骨・ALC']})"
         + (f" | 前回比: 新規 {len(now - prev)} 室、なくなった {len(prev - now)} 室" if prev else ""))
-    log(f"出力: {cand_path} と conditions.json -> アーティファクトへの反映は ARTIFACT.md を参照")
+    log(f"出力: {out_dir}/ の candidates.json・plans.json・conditions.json -> アーティファクトへの反映は ARTIFACT.md を参照")
     return 0
 
 

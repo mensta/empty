@@ -1,10 +1,43 @@
 [
-  {"key": "layout", "label": "間取り", "text": "1LDK"},
-  {"key": "rent_max", "label": "家賃", "text": "18万円以下", "value": 18},
-  {"key": "line", "label": "沿線", "text": "東急東横線・目黒線(東京都側)"},
-  {"key": "walk", "label": "駅徒歩", "text": "7分以内"},
-  {"key": "age", "label": "築年数", "text": "20年以内"},
-  {"key": "area", "label": "広さ", "text": "35㎡以上"},
-  {"key": "structure", "label": "構造", "text": "木造を除く(鉄筋コン優先)"},
-  {"key": "photos", "label": "写真", "text": "間取り図のみ・極端に少ない物件を除く"}
+ {
+  "key": "layout",
+  "label": "間取り",
+  "text": "1LDK"
+ },
+ {
+  "key": "rent_max",
+  "label": "家賃",
+  "text": "18万円以下",
+  "value": 18.0
+ },
+ {
+  "key": "line",
+  "label": "沿線",
+  "text": "東急東横線・東急目黒線(東京都)"
+ },
+ {
+  "key": "walk",
+  "label": "駅徒歩",
+  "text": "7分以内"
+ },
+ {
+  "key": "age",
+  "label": "築年数",
+  "text": "20年以内"
+ },
+ {
+  "key": "area",
+  "label": "広さ",
+  "text": "28㎡より広い"
+ },
+ {
+  "key": "structure",
+  "label": "構造",
+  "text": "木造を除く(鉄筋コン優先)"
+ },
+ {
+  "key": "photos",
+  "label": "写真",
+  "text": "間取り図のみ・極端に少ない物件を除く"
+ }
 ]

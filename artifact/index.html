@@ -35,6 +35,18 @@
   .lx .lx-dot { display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: var(--cds-gap-xs); border-radius: 50%; }
   .lx .lx-over { color: var(--color-warn); }
   .lx .lx-empty { padding: var(--cds-pad-lg); text-align: center; color: var(--color-fg-muted); }
+  .lx #list { position: relative; }
+  .lx .lx-namecell { display: flex; gap: var(--cds-gap-sm); align-items: flex-start; }
+  .lx .lx-nametext { min-width: 0; }
+  .lx .lx-plan { all: unset; box-sizing: border-box; flex: none; display: flex; align-items: center; justify-content: center; width: 4rem; height: 3rem; overflow: hidden; cursor: zoom-in; background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx .lx-plan img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .lx .lx-plan:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 1px; }
+  .lx .lx-plan[aria-disabled="true"] { cursor: default; }
+  .lx .lx-pop { position: absolute; z-index: 3; width: min(22.5rem, calc(100% - 1rem)); padding: var(--cds-pad-sm); background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); }
+  .lx .lx-popimg { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; width: 100%; overflow: hidden; background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .lx .lx-popimg img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .lx .lx-popcap { display: flex; flex-direction: column; gap: 2px; margin-top: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); }
+  .lx .lx-popcap b { font-weight: var(--cds-font-weight-medium); }
   @container (max-width: 760px) { .lx .lx-table :is(th, td):nth-child(n+7) { display: none; } }
   @container (max-width: 480px) { .lx .lx-table :is(th, td):nth-child(n+5) { display: none; } }
 
@@ -60,6 +72,7 @@
   <section class="lx-card" id="list">
     <h2>候補一覧</h2>
     <p class="lx-note" data-draw="tablenote" data-source="conditions">—</p>
+    <p class="lx-note">物件名の左の図は間取り図です。カーソルを合わせる(スマホはタップ)と大きく表示します。</p>
     <div class="lx-bar">
       <select class="dash-select" id="lx-group" data-lx="group" aria-label="構造">
         <option value="">すべての構造</option>
@@ -78,7 +91,7 @@
       <span class="lx-count" data-draw="count" data-source="candidates">—</span>
     </div>
     <div class="lx-scroll">
-      <table class="lx-table" data-source="candidates" data-row-key="id">
+      <table class="lx-table" data-source="candidates plans" data-row-key="id">
         <thead>
           <tr>
             <th data-field="station" data-sort-col="station" aria-sort="none"><button type="button">駅・徒歩</button></th>
@@ -96,6 +109,9 @@
         <tbody data-draw="rows"></tbody>
       </table>
     </div>
+    <div class="lx-pop" id="lx-pop" hidden role="dialog" aria-label="間取り図">
+      <div data-draw="planpop" data-source="plans candidates"></div>
+    </div>
   </section>
 
   <section class="lx-card" id="chart">
@@ -110,12 +126,13 @@
 </div>
 
 <script>
-  const S = { group: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1 };
+  const S = { group: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1, plan: null };
   const fmt0 = d3.format('.0f');
   const fmt1 = d3.format('.1f');
   const num = d3.format(',');
 
   const rows = () => { const g = dash.data('candidates'); return g.status === 'ok' ? g.data : []; };
+  const planMap = () => { const g = dash.data('plans'); return new Map(g.status === 'ok' ? g.data.map((r) => [r.id, r.img]) : []); };
   const cond = (key) => { const g = dash.data('conditions'); return g.status === 'ok' ? g.data.find((r) => r.key === key) : undefined; };
   const limit = () => { const c = cond('rent_max'); return c && c.value != null ? Number(c.value) : null; };
 
@@ -222,11 +239,40 @@
     el.textContent = all.length ? `${num(all.filter(pass).length)} / ${num(all.length)} 室を表示` : '—';
   });
 
+  // 間取り図の吹き出し (表の外に置き、スクロール領域で切れないようにする)
+  const popOpen = (id, anchor) => {
+    const pop = document.getElementById('lx-pop'); const card = document.getElementById('list');
+    if (!pop || !card) return;
+    S.plan = id;
+    const a = anchor.getBoundingClientRect(); const c = card.getBoundingClientRect();
+    const w = Math.min(360, card.clientWidth - 16);
+    const h = w * 0.75 + 70;
+    pop.style.left = `${Math.max(8, Math.min(a.right - c.left + 8, card.clientWidth - w - 8))}px`;
+    pop.style.top = `${Math.max(0, Math.min(a.top - c.top - 4, card.clientHeight - h))}px`;
+    pop.hidden = false;
+    dash.draw('planpop');
+  };
+  const popClose = () => { const pop = document.getElementById('lx-pop'); S.plan = null; if (pop) pop.hidden = true; };
+  document.addEventListener('click', (e) => { if (!e.target.closest('.lx-plan, #lx-pop')) popClose(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') popClose(); });
+  dash.draw('planpop', (box) => {
+    const r = rows().find((x) => x.id === S.plan); const img = S.plan ? planMap().get(S.plan) : null;
+    box.replaceChildren();
+    if (!r) return;
+    const frame = el('div', 'lx-popimg');
+    if (img) { const i = document.createElement('img'); i.src = img; i.alt = `${r.building}の間取り図`; frame.append(i); } else frame.append('間取り図はありません');
+    const cap = el('div', 'lx-popcap');
+    cap.append(el('b', '', r.building), el('span', '', `${fmt1(r.area)}㎡ / 総額${fmt1(r.total)}万円 / ${r.station} 徒歩${r.walk}分`));
+    box.append(frame, cap);
+  });
+
   // 表
   const cell = (...kids) => { const td = document.createElement('td'); td.append(...kids); return td; };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   dash.draw('rows', (tb) => {
     const l = limit();
+    const plans = planMap();
+    popClose();
     const list = rows().filter(pass).sort(comparator());
     if (!list.length) {
       const tr = document.createElement('tr'); const td = el('td', 'lx-empty', rows().length ? '条件に合う物件がありません。' : '候補を読み込み中です。'); td.colSpan = 10; tr.append(td);
@@ -236,8 +282,21 @@
       const tr = document.createElement('tr'); tr.dataset.key = r.id;
       const dot = el('i', 'lx-dot'); dot.style.background = dash.colors[r.group === 'RC' ? 0 : 1];
       const name = el('a', 'lx-name', r.building); name.href = r.url;
-      const nameCell = cell(name);
-      if (r.note) r.note.split('・').forEach((n) => nameCell.append(el('span', 'lx-tag', n)));
+      const text = el('div', 'lx-nametext'); text.append(name);
+      if (r.note) r.note.split('・').forEach((n) => text.append(el('span', 'lx-tag', n)));
+      const thumb = el('button', 'lx-plan'); thumb.type = 'button';
+      const src = plans.get(r.id);
+      if (src) {
+        const i = document.createElement('img'); i.src = src; i.alt = ''; i.loading = 'lazy'; thumb.append(i);
+        thumb.setAttribute('aria-label', `${r.building}の間取り図を見る`);
+        thumb.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') popOpen(r.id, thumb); });
+        thumb.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') popClose(); });
+        thumb.addEventListener('click', (e) => { if (S.plan === r.id && e.pointerType !== 'mouse') popClose(); else popOpen(r.id, thumb); });
+      } else {
+        thumb.textContent = '図なし'; thumb.setAttribute('aria-disabled', 'true'); thumb.tabIndex = -1;
+      }
+      const wrap = el('div', 'lx-namecell'); wrap.append(thumb, text);
+      const nameCell = cell(wrap);
       const total = el('b', (l != null && r.total > l) ? 'lx-over' : '', fmt1(r.total));
       const totalCell = cell(total, el('span', 'lx-sub', `${fmt1(r.rent)}+${fmt1(r.admin)}`));
       tr.append(

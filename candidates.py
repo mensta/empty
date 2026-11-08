@@ -2,7 +2,7 @@
 """検索結果の行 -> アーティファクト用の候補データ (candidates.json) / 条件データ (conditions.json)。
 
 通常は run.py から使う。単体でも動く (suumo_scraper.py の結果 CSV を渡す):
-  python candidates.py RESULT.csv --max-age 20 --min-area 35 --max-walk 7
+  python candidates.py RESULT.csv --max-age 20 --min-area 28 --max-walk 7
 
 構造 (RC など) は詳細ページにしか無いので、取得結果は detail_cache.json に保存して再利用する
 (新しく出た物件の詳細ページだけを取りに行く)。出力は行オブジェクトの配列 (1行 = 1部屋)。
@@ -59,12 +59,12 @@ def man(v):
     return round(float(v) / 10000, 2)
 
 
-def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=35.0, max_walk=7, delay=1.5, log=print):
+def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max_walk=7, delay=1.5, log=print):
     """rows: suumo_scraper の検索結果 (dict。CSV から読んだ文字列でも可)。構造の無い物件は詳細ページを取得する。"""
     pool = []
     for r in rows:
         area = float(re.match(r"[\d.]+", r["area"]).group())
-        if (r["address"].startswith(prefix) and int(r["age"]) <= max_age and area >= min_area
+        if (r["address"].startswith(prefix) and int(r["age"]) <= max_age and area > min_area
                 and int(r["walk_min"]) <= max_walk):
             pool.append({**r, "_area": area})
     cache = load_json(cache_path, {})
@@ -118,7 +118,7 @@ def make_conditions(layout, max_rent, lines, prefs, walk, max_age, min_area, min
         {"key": "line", "label": "沿線", "text": f"{line_names}({pref_names})"},
         {"key": "walk", "label": "駅徒歩", "text": f"{walk}分以内"},
         {"key": "age", "label": "築年数", "text": f"{max_age}年以内"},
-        {"key": "area", "label": "広さ", "text": f"{min_area:g}㎡以上"},
+        {"key": "area", "label": "広さ", "text": f"{min_area:g}㎡より広い"},
         {"key": "structure", "label": "構造", "text": "木造を除く(鉄筋コン優先)"},
         {"key": "photos", "label": "写真", "text": "間取り図のみ・極端に少ない物件を除く" if min_photos else "写真の枚数は問わない"},
     ]
@@ -129,7 +129,7 @@ def main():
     ap.add_argument("result_csv")
     ap.add_argument("--prefix", default="東京都", help="住所の先頭 (空なら全域)")
     ap.add_argument("--max-age", type=int, default=20)
-    ap.add_argument("--min-area", type=float, default=35)
+    ap.add_argument("--min-area", type=float, default=28, help="この広さ(㎡)より広い部屋だけ")
     ap.add_argument("--max-walk", type=int, default=7)
     ap.add_argument("--delay", type=float, default=1.5)
     ap.add_argument("--cache", default=os.path.join(DATA, "detail_cache.json"))
