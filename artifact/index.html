@@ -1,0 +1,309 @@
+<meta name="dash-one-writer">
+<style>
+  .lx { display: flex; flex-direction: column; gap: var(--cds-gap-lg); max-width: 1180px; margin-inline: auto; font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .lx .lx-title { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.25; text-wrap: balance; }
+  .lx .lx-lede { margin: var(--cds-gap-sm) 0 0; font-size: var(--cds-font-size-heading); line-height: 1.55; max-width: 64ch; }
+  .lx .lx-lede b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .lx .lx-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); margin: var(--cds-gap-md) 0 0; padding: 0; list-style: none; }
+  .lx .lx-chip { display: inline-flex; gap: var(--cds-gap-xs); align-items: baseline; padding: 2px var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx .lx-chip b { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); }
+
+  .lx .lx-card { container-type: inline-size; display: flex; flex-direction: column; gap: var(--cds-gap-md); padding: var(--cds-pad-lg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+  .lx .lx-card h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .lx .lx-note { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+
+  .lx .lx-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+  .lx .lx-bar > * { min-width: 0; }
+  .lx .lx-search { flex: 1 1 11rem; padding: var(--cds-pad-xs) var(--cds-pad-sm); font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background-color: transparent; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+  .lx .lx-check { display: inline-flex; gap: var(--cds-gap-xs); align-items: center; font-size: var(--cds-font-size-body); }
+  .lx .lx-btn { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: transparent; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; }
+  .lx .lx-count { margin-left: auto; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+
+  .lx .lx-scroll { max-height: 36rem; overflow: auto; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+  .lx .lx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+  .lx .lx-table th { position: sticky; top: 0; z-index: 1; padding: 0; text-align: left; font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); background: var(--color-panel); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .lx .lx-table th button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: var(--cds-pad-sm); cursor: pointer; }
+  .lx .lx-table th button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: -2px; }
+  .lx .lx-table th[aria-sort="ascending"] button::after { content: " ▲"; font-size: 0.7em; }
+  .lx .lx-table th[aria-sort="descending"] button::after { content: " ▼"; font-size: 0.7em; }
+  .lx .lx-table td { padding: var(--cds-pad-sm); vertical-align: top; border-bottom: 1px solid var(--color-border-line); }
+  .lx .lx-table tbody tr:last-child td { border-bottom: 0; }
+  .lx .lx-table tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 5%, transparent); }
+  .lx .lx-sub { display: block; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx .lx-name { color: var(--color-fg); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; font-weight: var(--cds-font-weight-medium); }
+  .lx .lx-tag { display: inline-block; margin-left: var(--cds-gap-xs); padding: 0 var(--cds-pad-xs); font-size: var(--cds-font-size-caption); color: var(--color-warn); border: 1px solid currentColor; border-radius: var(--cds-radius); white-space: nowrap; }
+  .lx .lx-dot { display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: var(--cds-gap-xs); border-radius: 50%; }
+  .lx .lx-over { color: var(--color-warn); }
+  .lx .lx-empty { padding: var(--cds-pad-lg); text-align: center; color: var(--color-fg-muted); }
+  @container (max-width: 760px) { .lx .lx-table :is(th, td):nth-child(n+7) { display: none; } }
+  @container (max-width: 480px) { .lx .lx-table :is(th, td):nth-child(n+5) { display: none; } }
+
+  .lx .lx-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .lx .lx-sw { display: inline-block; width: 0.625rem; height: 0.625rem; margin-right: var(--cds-gap-xs); border-radius: 50%; }
+  .lx .lx-chart { position: relative; min-height: 300px; }
+  .lx .lx-chart svg { display: block; width: 100%; height: auto; }
+  .lx .lx-chart text { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); }
+  .lx .lx-chart .lx-grid line { stroke: var(--cds-chart-grid); }
+  .lx .lx-chart .lx-grid path { display: none; }
+  .lx .lx-tip { position: absolute; z-index: 2; pointer-events: none; padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); white-space: nowrap; }
+  .lx .lx-tip b { font-weight: var(--cds-font-weight-medium); }
+  .lx .lx-tip span { display: block; color: var(--cds-text-secondary); }
+</style>
+
+<div class="lx" id="top">
+  <header>
+    <h1 class="lx-title">東横線・目黒線の1LDK候補</h1>
+    <p class="lx-lede">候補は <b data-draw="sum" data-source="summary" data-field="total">—</b> 室で、鉄筋コンが <b data-draw="sum" data-source="summary" data-field="rc">—</b> 室、鉄骨・ALCが <b data-draw="sum" data-source="summary" data-field="other">—</b> 室です。鉄筋コンの総額(管理費込み)は最安 <b data-draw="sum" data-source="summary" data-field="rc_min" data-fmt="man">—</b> 万円、中央値 <b data-draw="sum" data-source="summary" data-field="rc_median" data-fmt="man">—</b> 万円です。</p>
+    <ul class="lx-chips" data-draw="conditions" data-source="conditions" aria-label="絞り込み条件"></ul>
+  </header>
+
+  <section class="lx-card" id="list">
+    <h2>候補一覧</h2>
+    <p class="lx-note" data-draw="tablenote" data-source="conditions">—</p>
+    <div class="lx-bar">
+      <select class="dash-select" id="lx-group" data-lx="group" aria-label="構造">
+        <option value="">すべての構造</option>
+        <option value="RC">鉄筋コン(RC)</option>
+        <option value="鉄骨・ALC">鉄骨・ALC</option>
+      </select>
+      <select class="dash-select" id="lx-line" data-lx="line" aria-label="路線">
+        <option value="">両方の路線</option>
+        <option value="東横">東横線</option>
+        <option value="目黒">目黒線</option>
+      </select>
+      <select class="dash-select" id="lx-station" data-draw="stations" data-source="candidates" aria-label="駅"></select>
+      <input class="lx-search" id="lx-q" type="search" data-lx="q" placeholder="物件名・駅で検索" aria-label="物件名・駅で検索">
+      <label class="lx-check"><input id="lx-within" type="checkbox" data-lx="within"> <span data-draw="withinlabel" data-source="conditions">—</span></label>
+      <button class="lx-btn" id="lx-reset" type="button">リセット</button>
+      <span class="lx-count" data-draw="count" data-source="candidates">—</span>
+    </div>
+    <div class="lx-scroll">
+      <table class="lx-table" data-source="candidates" data-row-key="id">
+        <thead>
+          <tr>
+            <th data-field="station" data-sort-col="station" aria-sort="none"><button type="button">駅・徒歩</button></th>
+            <th data-field="building" data-sort-col="building" aria-sort="none"><button type="button">物件</button></th>
+            <th data-field="total" data-sort-col="total" aria-sort="none"><button type="button">総額(万円)</button></th>
+            <th data-field="area" data-sort-col="area" aria-sort="none"><button type="button">広さ(㎡)</button></th>
+            <th data-field="age" data-sort-col="age" aria-sort="none"><button type="button">築</button></th>
+            <th data-field="structure" data-sort-col="group" aria-sort="none"><button type="button">構造</button></th>
+            <th data-field="floor" data-sort-col="floor" aria-sort="none"><button type="button">階</button></th>
+            <th data-field="photos" data-sort-col="photos" aria-sort="none"><button type="button">写真</button></th>
+            <th data-field="shiki" data-sort-col="shiki" aria-sort="none"><button type="button">敷/礼(万円)</button></th>
+            <th data-field="move_in" data-sort-col="move_in" aria-sort="none"><button type="button">入居</button></th>
+          </tr>
+        </thead>
+        <tbody data-draw="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="lx-card" id="chart">
+    <h2>広さと総額</h2>
+    <p class="lx-note">点にカーソルを合わせると物件が分かります。薄い点は、上の絞り込みから外れた物件です。</p>
+    <div class="lx-legend">
+      <span><i class="lx-sw" data-lx-sw="0"></i>鉄筋コン(RC)</span>
+      <span><i class="lx-sw" data-lx-sw="1"></i>鉄骨・ALC</span>
+    </div>
+    <div class="lx-chart" data-draw="scatter" data-source="candidates conditions"></div>
+  </section>
+</div>
+
+<script>
+  const S = { group: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1 };
+  const fmt0 = d3.format('.0f');
+  const fmt1 = d3.format('.1f');
+  const num = d3.format(',');
+
+  const rows = () => { const g = dash.data('candidates'); return g.status === 'ok' ? g.data : []; };
+  const cond = (key) => { const g = dash.data('conditions'); return g.status === 'ok' ? g.data.find((r) => r.key === key) : undefined; };
+  const limit = () => { const c = cond('rent_max'); return c && c.value != null ? Number(c.value) : null; };
+
+  dash.calc('summary', {
+    title: '候補の件数と総額',
+    description: '候補の部屋数、構造別の件数、鉄筋コンの総額の最安値と中央値',
+    inputs: ['candidates'],
+    fn: (candidates) => {
+      const rc = candidates.filter((r) => r.group === 'RC');
+      const t = rc.map((r) => r.total).sort((a, b) => a - b);
+      const mid = t.length % 2 ? t[(t.length - 1) / 2] : (t[t.length / 2 - 1] + t[t.length / 2]) / 2;
+      return [{ total: candidates.length, rc: rc.length, other: candidates.length - rc.length, rc_min: t.length ? t[0] : null, rc_median: t.length ? mid : null }];
+    },
+  });
+
+  const pass = (r) => {
+    if (S.group && r.group !== S.group) return false;
+    if (S.line && r.line !== S.line) return false;
+    if (S.station && r.station !== S.station) return false;
+    if (S.within) { const l = limit(); if (l != null && r.total > l) return false; }
+    if (S.q && ![r.building, r.station, r.line, r.note, r.structure].join(' ').toLowerCase().includes(S.q)) return false;
+    return true;
+  };
+  const comparator = () => {
+    if (S.sort === 'default') return (a, b) => ((a.group === b.group) ? 0 : (a.group === 'RC' ? -1 : 1)) || a.total - b.total;
+    const k = S.sort;
+    return (a, b) => {
+      const x = a[k]; const y = b[k];
+      const c = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y), 'ja');
+      return (c || a.total - b.total) * S.dir;
+    };
+  };
+  const redraw = () => {
+    ['rows', 'scatter', 'count'].forEach((n) => dash.draw(n));
+    document.querySelectorAll('th[data-sort-col]').forEach((th) => {
+      const on = th.dataset.sortCol === S.sort;
+      th.setAttribute('aria-sort', on ? (S.dir === 1 ? 'ascending' : 'descending') : 'none');
+    });
+  };
+
+  // 絞り込みの操作
+  document.querySelectorAll('[data-lx]').forEach((c) => {
+    const key = c.dataset.lx;
+    c.addEventListener(c.type === 'search' ? 'input' : 'change', () => {
+      S[key] = c.type === 'checkbox' ? c.checked : (key === 'q' ? c.value.trim().toLowerCase() : c.value);
+      redraw();
+    });
+  });
+  document.querySelectorAll('th[data-sort-col] button').forEach((b) => {
+    b.addEventListener('click', () => {
+      const col = b.parentElement.dataset.sortCol;
+      if (S.sort === col) S.dir = -S.dir; else { S.sort = col; S.dir = 1; }
+      redraw();
+    });
+  });
+  document.querySelectorAll('#lx-reset').forEach((b) => {
+    b.addEventListener('click', () => {
+      Object.assign(S, { group: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1 });
+      document.querySelectorAll('[data-lx]').forEach((c) => { if (c.type === 'checkbox') c.checked = false; else c.value = ''; });
+      document.querySelectorAll('#lx-station').forEach((c) => { c.value = ''; });
+      redraw();
+    });
+  });
+  dash.onData(() => {
+    document.querySelectorAll('[data-lx-sw]').forEach((s) => { s.style.background = dash.colors[Number(s.dataset.lxSw)]; });
+  });
+
+  // 見出しの数字
+  dash.draw('sum', (el) => {
+    const g = dash.data('summary');
+    const v = g.status === 'ok' && g.data.length ? g.data[0][el.dataset.field] : null;
+    el.textContent = v == null ? '—' : (el.dataset.fmt === 'man' ? fmt1(v) : num(v));
+  });
+
+  // 条件(データで更新できる)
+  dash.draw('conditions', (ul) => {
+    const g = dash.data('conditions');
+    ul.replaceChildren(...(g.status === 'ok' ? g.data : []).map((c) => {
+      const li = document.createElement('li'); li.className = 'lx-chip';
+      const a = document.createElement('span'); a.textContent = c.label;
+      const b = document.createElement('b'); b.textContent = c.text;
+      li.append(a, b); return li;
+    }));
+  });
+  dash.draw('tablenote', (el) => {
+    const l = limit();
+    el.textContent = l == null ? '見出しをクリックすると並べ替えます。' : `見出しをクリックすると並べ替えます。橙色の総額は、管理費込みで${fmt0(l)}万円を超える部屋です。`;
+  });
+  dash.draw('withinlabel', (el) => {
+    const l = limit();
+    el.textContent = l == null ? '総額を絞る' : `総額${fmt0(l)}万円以内`;
+  });
+
+  dash.draw('stations', (sel) => {
+    const seen = new Map();
+    rows().forEach((r) => { if (!seen.has(r.station)) seen.set(r.station, r.line); });
+    const list = [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ja') || a[0].localeCompare(b[0], 'ja'));
+    sel.replaceChildren(new Option('すべての駅', ''), ...list.map(([st, ln]) => new Option(`${st}(${ln})`, st)));
+    sel.value = S.station;
+    sel.onchange = () => { S.station = sel.value; redraw(); };
+  });
+  dash.draw('count', (el) => {
+    const all = rows();
+    el.textContent = all.length ? `${num(all.filter(pass).length)} / ${num(all.length)} 室を表示` : '—';
+  });
+
+  // 表
+  const cell = (...kids) => { const td = document.createElement('td'); td.append(...kids); return td; };
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  dash.draw('rows', (tb) => {
+    const l = limit();
+    const list = rows().filter(pass).sort(comparator());
+    if (!list.length) {
+      const tr = document.createElement('tr'); const td = el('td', 'lx-empty', rows().length ? '条件に合う物件がありません。' : '候補を読み込み中です。'); td.colSpan = 10; tr.append(td);
+      tb.replaceChildren(tr); return;
+    }
+    tb.replaceChildren(...list.map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.id;
+      const dot = el('i', 'lx-dot'); dot.style.background = dash.colors[r.group === 'RC' ? 0 : 1];
+      const name = el('a', 'lx-name', r.building); name.href = r.url;
+      const nameCell = cell(name);
+      if (r.note) r.note.split('・').forEach((n) => nameCell.append(el('span', 'lx-tag', n)));
+      const total = el('b', (l != null && r.total > l) ? 'lx-over' : '', fmt1(r.total));
+      const totalCell = cell(total, el('span', 'lx-sub', `${fmt1(r.rent)}+${fmt1(r.admin)}`));
+      tr.append(
+        cell(el('b', '', r.station), el('span', 'lx-sub', `${r.line}線 徒歩${r.walk}分`)),
+        nameCell,
+        totalCell,
+        cell(fmt1(r.area)),
+        cell(r.age === 0 ? '新築' : `${r.age}年`),
+        cell(dot, r.structure),
+        cell(r.floor),
+        cell(`${r.photos}枚`),
+        cell(`${r.shiki}/${r.rei}`),
+        cell(r.move_in || '—'),
+      );
+      return tr;
+    }));
+  });
+
+  // 散布図: 広さ(横)と総額(縦)
+  dash.draw('scatter', (box) => {
+    const g = dash.data('candidates');
+    box.replaceChildren();
+    box.classList.toggle('dash-skeleton', g.status === 'loading');
+    if (g.status !== 'ok' || !g.data.length) return;
+    const data = g.data;
+    const W = Math.max(280, box.clientWidth); const H = 320;
+    const lim = limit();
+    const xe = d3.extent(data, (r) => r.area); const ye = d3.extent(data, (r) => r.total);
+    const xDom = [Math.floor(xe[0] - 1), Math.ceil(xe[1] + 1)];
+    const yDom = [Math.floor(ye[0] - 0.5), Math.ceil(Math.max(ye[1], lim == null ? 0 : lim) + 0.5)];
+    const svg = d3.select(box).append('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', '広さと総額の散布図');
+    const tw = (s) => { const t = svg.append('text').text(s); const w = t.node().getComputedTextLength(); t.remove(); return w; };
+    const yTicks = d3.scaleLinear(yDom, [0, 1]).ticks(6);
+    const m = { top: 14, right: 18, bottom: 44, left: Math.ceil(d3.max(yTicks, (v) => tw(fmt0(v)))) + 44 };
+    const x = d3.scaleLinear(xDom, [m.left, W - m.right]);
+    const y = d3.scaleLinear(yDom, [H - m.bottom, m.top]);
+
+    svg.append('g').attr('class', 'lx-grid').attr('transform', `translate(${m.left},0)`)
+      .call(d3.axisLeft(y).ticks(6).tickSize(-(W - m.left - m.right)).tickFormat(fmt0))
+      .attr('font-size', null).attr('font-family', null);
+    svg.append('g').attr('transform', `translate(0,${H - m.bottom})`)
+      .call(d3.axisBottom(x).ticks(7).tickFormat(fmt0).tickSizeOuter(0))
+      .attr('font-size', null).attr('font-family', null)
+      .call((a) => { a.selectAll('line,path').attr('stroke', 'var(--cds-chart-axis)'); });
+    svg.append('text').attr('x', (m.left + W - m.right) / 2).attr('y', H - 8).attr('text-anchor', 'middle').text('広さ(㎡)');
+    svg.append('text').attr('transform', `translate(14,${(m.top + H - m.bottom) / 2}) rotate(-90)`).attr('text-anchor', 'middle').text('総額(万円)');
+    if (lim != null) {
+      svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', y(lim)).attr('y2', y(lim))
+        .attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
+      svg.append('text').attr('x', W - m.right).attr('y', y(lim) - 5).attr('text-anchor', 'end').text(`${fmt0(lim)}万円`);
+    }
+
+    const tip = document.createElement('div'); tip.className = 'lx-tip'; tip.hidden = true; box.append(tip);
+    const show = (event, r) => {
+      tip.replaceChildren(el('b', '', r.building), el('span', '', `${r.station}(${r.line}線) 徒歩${r.walk}分`), el('span', '', `総額${fmt1(r.total)}万円 / ${fmt1(r.area)}㎡ / ${r.age === 0 ? '新築' : `築${r.age}年`} / ${r.structure}`));
+      tip.hidden = false;
+      const [px, py] = d3.pointer(event, box);
+      tip.style.left = `${Math.max(0, Math.min(px + 12, box.clientWidth - tip.offsetWidth))}px`;
+      tip.style.top = `${Math.max(0, py - tip.offsetHeight - 12)}px`;
+    };
+    const ordered = [...data].sort((a, b) => Number(pass(a)) - Number(pass(b)));
+    svg.append('g').selectAll('circle').data(ordered).join('circle')
+      .attr('cx', (r) => x(r.area)).attr('cy', (r) => y(r.total)).attr('r', 5)
+      .attr('fill', (r) => dash.colors[r.group === 'RC' ? 0 : 1])
+      .attr('fill-opacity', (r) => (pass(r) ? 0.9 : 0.18))
+      .attr('stroke', 'var(--color-panel)').attr('stroke-width', 1)
+      .on('pointermove', show).on('pointerleave', () => { tip.hidden = true; });
+  });
+</script>

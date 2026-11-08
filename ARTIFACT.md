@@ -1,0 +1,27 @@
+# 物件候補アーティファクトの更新手順
+
+- アーティファクト: https://claude.ai/artifact/FGVqc2su3LU2XfoQKZMjHX （Dashboard タイプ。ページ本体とデータは別）
+- ページ (`files/index.html`) は **データを読んで描くだけ**。候補の入れ替えでは触らない。
+- データは2つのファイル (行オブジェクトの JSON):
+  - `data/candidates.json` : 候補の部屋 (1行 = 1部屋)。`candidates.py` が生成する。
+  - `data/conditions.json` : 画面上部の検索条件。`rent_max` の `value` は総額の橙色表示と「総額○万円以内」の基準にも使う。
+- `data/detail_cache.json` : 物件の詳細ページ (構造など) のキャッシュ。新しい物件の分だけ取得する。
+- `artifact/index.html` : ページのバックアップ。正本はアーティファクト側 (ページを直したら手で合わせる)。
+
+## 候補を入れ替える (ページは読み直さない)
+
+1. データを作る
+   ```bash
+   python suumo_scraper.py --lines toyoko meguro --prefs tokyo --layout 1LDK --max-rent 18 --walk 10 --max-age 35 --max-pages 130 --out result.csv
+   python candidates.py result.csv        # -> data/candidates.json (条件は --max-age / --min-area / --max-walk)
+   ```
+   少しの修正 (1行消す・メモを足す) なら `data/candidates.json` を直接編集してよい。
+2. `Artifact` (`url` = 上のURL, `asset: true`, `file_path` = `data/candidates.json`) でアップロード → `/_blob/<id>` が返る。
+3. `ArtifactData` `update` で `datasets/candidates` を更新 (`if_version` は直前の `set`/`update` の結果の version):
+   `{"source": {"kind": "file", "url": "/_blob/<id>", "name": "candidates.json", "format": "json"}, "updated": {"at": "<UTC ISO>", "by": "Claude"}, "edit": {"via": "claude", "at": "<UTC ISO>"}}`
+4. 古い `/_blob/<id>` を `Artifact` `action: delete` + `path: <id>` で削除 (どこからも参照されなくなったので)。
+5. 条件の文言を変えたときだけ、`data/conditions.json` で同じ 2〜4 を `datasets/conditions` に行う。
+
+## ページを直す
+
+`ArtifactData` `str_replace` で `files/index.html` の `text` の該当箇所だけを置き換える (全文を読み直さない)。
