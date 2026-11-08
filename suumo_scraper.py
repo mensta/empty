@@ -105,6 +105,17 @@ def line_stations(session: requests.Session, pref: str, line: str):
     return ra, rn, ek
 
 
+# 一覧の画像カルーセルは alt に写真の種類が入る。間取り図・周辺施設・ラベルは「物件の写真」に数えない。
+INTERIOR_ALTS = {"居室・リビング", "キッチン", "バス・シャワールーム", "トイレ", "収納", "洗面設備", "その他部屋・スペース", "玄関", "その他設備", "バルコニー"}
+BUILDING_ALTS = {"建物外観", "セキュリティ", "その他共有部分", "エントランス", "ロビー", "眺望", "駐車場", "その他"}
+
+
+def count_photos(card) -> Dict[str, int]:
+    alts = [i.get("alt", "") for i in card.select(".cassette_carrousel-thumblist img")]
+    n_in = sum(a in INTERIOR_ALTS for a in alts)
+    return {"n_images": len(alts), "n_photos": n_in + sum(a in BUILDING_ALTS for a in alts), "n_interior": n_in}
+
+
 def parse_rooms(soup: BeautifulSoup) -> Iterator[Dict]:
     for p in soup.select("div.property"):
         a = p.select_one("a.js-cassetLinkHref")
@@ -125,6 +136,7 @@ def parse_rooms(soup: BeautifulSoup) -> Iterator[Dict]:
             "layout": layout, "area": area.replace(" 2", "2"),
             "age": age, "address": addr, "access_list": access,
             "url": BASE + a["href"].split("?")[0],
+            **count_photos(p),
         }
         rec["total_yen"] = (rec["rent_yen"] or 0) + (rec["admin_yen"] or 0) if rec["rent_yen"] else None
         yield rec
@@ -160,7 +172,7 @@ def dedupe(rows: List[Dict]) -> List[Dict]:
     return list(best.values())
 
 
-def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print):
+def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print, min_photos=3):
     names = {LINES[l][1] for l in lines}
     wl = next((s for s in WALK_STEPS if s >= walk), 20)
     seen: Dict[str, Dict] = {}
@@ -182,13 +194,19 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
                 time.sleep(delay)
             log(f"  pages={page} unique so far={len(seen)}")
     out = []
+    few_photos = 0
     for r in seen.values():
         w = walk_on_lines(r["access_list"], names)
+        # 間取り図しかない / 写真が極端に少ない掲載は除外 (同じ部屋でも写真の揃った別の掲載があれば、そちらが残る)
+        if r["n_photos"] < min_photos or r["n_interior"] < 1:
+            few_photos += 1
+            continue
         if (r["layout"] == layout and r["rent_yen"] is not None and r["rent_yen"] <= max_rent_man * 10000
                 and r["age"] is not None and r["age"] <= max_age and w and w[0] <= walk):
             r["walk_min"], r["station"] = w
             r["access"] = " / ".join(r["access_list"])
             out.append(r)
+    log(f"写真が少ない掲載を除外: {few_photos} 件 (min_photos={min_photos})")
     out = dedupe(out)
     out.sort(key=lambda r: (r["total_yen"] or 0))
     return out, len(seen)
@@ -229,12 +247,13 @@ def main() -> int:
     ap.add_argument("--walk", type=int, default=10, help="徒歩上限(分)")
     ap.add_argument("--max-age", type=int, default=35, help="築年数上限")
     ap.add_argument("--max-pages", type=int, default=80)
+    ap.add_argument("--min-photos", type=int, default=3, help="間取り図・周辺写真を除く写真の最低枚数 (0 で無効)")
     args = ap.parse_args()
 
     s = requests.Session()
     if args.lines:
         rows, total = search_lines(s, args.lines, args.prefs, args.layout, args.max_rent, args.walk,
-                                   args.max_age, args.delay, args.max_pages, log=lambda m: print(m, file=sys.stderr))
+                                   args.max_age, args.delay, args.max_pages, log=lambda m: print(m, file=sys.stderr), min_photos=args.min_photos)
         for r in rows[: args.detail]:
             r.update(parse_detail(fetch(s, r["url"])))
             time.sleep(args.delay)
