@@ -74,6 +74,107 @@ def parse_list(soup: BeautifulSoup) -> Iterator[Dict[str, str]]:
             }
 
 
+
+# ---------- 沿線・条件指定検索 (部屋ごと表示: div.property) ----------
+LINES = {"toyoko": ("en_tokyutoyokosen", "東急東横線"), "meguro": ("en_tokyumegurosen", "東急目黒線")}
+PREFS = {"tokyo": "東京都", "kanagawa": "神奈川県"}
+LINE_URL = (
+    "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=030&bs=040&ra={ra}&rn={rn}{ek}"
+    "&cb=0.0&ct={rent}&et={walk}&cn=9999999&mb=0&mt=9999999&md={md}"
+    "&shkr1=03&shkr2=03&shkr3=03&shkr4=03&fw2=&page={page}"
+)
+# SUUMO の徒歩・築年数は段階値のみ。API 側は緩めに絞り、取得後に厳密に再フィルタする。
+WALK_STEPS = [1, 5, 7, 10, 15, 20]
+LAYOUT_CODES = {"ワンルーム": "01", "1K": "02", "1DK": "03", "1LDK": "04", "2K": "05", "2DK": "06", "2LDK": "07"}
+
+
+def yen(s: str) -> Optional[int]:
+    """'15万円' / '1.5万円' / '8000円' -> 円。'-' は None"""
+    m = re.match(r"([\d.]+)(万)?円", s.replace(",", ""))
+    if not m:
+        return None
+    return int(round(float(m.group(1)) * (10000 if m.group(2) else 1)))
+
+
+def line_stations(session: requests.Session, pref: str, line: str):
+    """沿線ページから (ra, rn, [ek...]) を取得"""
+    soup = fetch(session, f"{BASE}/chintai/{pref}/{LINES[line][0]}/")
+    ra = soup.select_one("input[name=ra][value]:not([value=''])")["value"]
+    rn = soup.select_one("input[name=rn][value]:not([value=''])")["value"]
+    ek = [i["value"] for i in soup.select('input[name="ek"]')]
+    return ra, rn, ek
+
+
+def parse_rooms(soup: BeautifulSoup) -> Iterator[Dict]:
+    for p in soup.select("div.property"):
+        a = p.select_one("a.js-cassetLinkHref")
+        if not a:
+            continue
+        texts = [clean(d.get_text(" ")) for d in p.find_all("div") if not d.find(["div", "table", "ul"])]
+        rent = clean(p.select_one(".detailbox-property-point").get_text()) if p.select_one(".detailbox-property-point") else ""
+        admin = next((t.split(" ", 1)[1] for t in texts if t.startswith("管理費 ")), "")
+        layout = next((t for t in texts if re.fullmatch(r"ワンルーム|\d[SLDK+]+", t)), "")
+        area = next((t for t in texts if re.fullmatch(r"[\d.]+m ?2?", t) or re.match(r"^[\d.]+m", t)), "")
+        age_t = next((t for t in texts if re.fullmatch(r"築\d+年|新築|築不詳", t)), "")
+        age = 0 if age_t == "新築" else (int(re.sub(r"\D", "", age_t)) if re.search(r"\d", age_t) else None)
+        addr = next((clean(td.get_text()) for td in p.select("td.detailbox-property-col") if re.match(r"(東京都|神奈川県)", clean(td.get_text()))), "")
+        access = [t for t in texts if re.search(r"/.+(駅|停) ?(歩\d+分|バス)", t)]
+        rec = {
+            "building": clean(a.get_text()),
+            "rent_yen": yen(rent), "admin_yen": yen(admin), "rent": rent, "admin_fee": admin,
+            "layout": layout, "area": area.replace(" 2", "2"),
+            "age": age, "address": addr, "access_list": access,
+            "url": BASE + a["href"].split("?")[0],
+        }
+        rec["total_yen"] = (rec["rent_yen"] or 0) + (rec["admin_yen"] or 0) if rec["rent_yen"] else None
+        yield rec
+
+
+def walk_on_lines(access: List[str], line_names) -> Optional[tuple]:
+    """対象路線の駅のうち最短徒歩 (分, '路線/駅')。無ければ None"""
+    best = None
+    for t in access:
+        m = re.match(r"(.+?)/(.+?)駅? 歩(\d+)分", t)
+        if m and m.group(1) in line_names:
+            w = int(m.group(3))
+            if best is None or w < best[0]:
+                best = (w, f"{m.group(1)}/{m.group(2)}")
+    return best
+
+
+def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print):
+    names = {LINES[l][1] for l in lines}
+    wl = next((s for s in WALK_STEPS if s >= walk), 20)
+    seen: Dict[str, Dict] = {}
+    for pref in prefs:
+        for line in lines:
+            ra, rn, ek = line_stations(session, pref, line)
+            ek_q = "".join(f"&ek={e}" for e in ek)
+            log(f"[{PREFS[pref]} {LINES[line][1]}] stations={len(ek)}")
+            for page in range(1, max_pages + 1):
+                url = LINE_URL.format(ra=ra, rn=rn, ek=ek_q, rent=f"{max_rent_man:.1f}", walk=wl, md=LAYOUT_CODES[layout], page=page)
+                soup = fetch(session, url)
+                if page == 1:
+                    log(f"  hits: {total_hits(soup)}")
+                got = list(parse_rooms(soup))
+                if not got:
+                    break
+                for r in got:
+                    seen.setdefault(r["url"], r)
+                time.sleep(delay)
+            log(f"  pages={page} unique so far={len(seen)}")
+    out = []
+    for r in seen.values():
+        w = walk_on_lines(r["access_list"], names)
+        if (r["layout"] == layout and r["rent_yen"] is not None and r["rent_yen"] <= max_rent_man * 10000
+                and r["age"] is not None and r["age"] <= max_age and w and w[0] <= walk):
+            r["walk_min"], r["station"] = w
+            r["access"] = " / ".join(r["access_list"])
+            out.append(r)
+    out.sort(key=lambda r: (r["total_yen"] or 0))
+    return out, len(seen)
+
+
 def parse_detail(soup: BeautifulSoup) -> Dict[str, str]:
     """詳細ページ → th/td の表をそのまま辞書化 + 主要項目"""
     table: Dict[str, str] = {}
@@ -102,9 +203,31 @@ def main() -> int:
     ap.add_argument("--detail", type=int, default=0, help="先頭N件の詳細ページも取得")
     ap.add_argument("--delay", type=float, default=1.5, help="リクエスト間隔(秒)")
     ap.add_argument("--out", default="out.csv")
+    ap.add_argument("--lines", nargs="*", choices=list(LINES), help="沿線指定モード (例: toyoko meguro)")
+    ap.add_argument("--prefs", nargs="*", default=["tokyo", "kanagawa"], choices=list(PREFS))
+    ap.add_argument("--layout", default="1LDK", choices=list(LAYOUT_CODES))
+    ap.add_argument("--max-rent", type=float, default=18.0, help="家賃上限(万円)")
+    ap.add_argument("--walk", type=int, default=10, help="徒歩上限(分)")
+    ap.add_argument("--max-age", type=int, default=35, help="築年数上限")
+    ap.add_argument("--max-pages", type=int, default=80)
     args = ap.parse_args()
 
     s = requests.Session()
+    if args.lines:
+        rows, total = search_lines(s, args.lines, args.prefs, args.layout, args.max_rent, args.walk,
+                                   args.max_age, args.delay, args.max_pages, log=lambda m: print(m, file=sys.stderr))
+        for r in rows[: args.detail]:
+            r.update(parse_detail(fetch(s, r["url"])))
+            time.sleep(args.delay)
+        for r in rows:
+            r.pop("access_list", None)
+        keys = list({k: 0 for r in rows for k in r})
+        with open(args.out, "w", newline="", encoding="utf-8-sig") as f:
+            w = csv.DictWriter(f, fieldnames=keys)
+            w.writeheader()
+            w.writerows(rows)
+        print(f"fetched {total} unique rooms -> {len(rows)} match all filters -> {args.out}", file=sys.stderr)
+        return 0
     rows: List[Dict[str, str]] = []
     for p in range(1, args.pages + 1):
         soup = fetch(s, SEARCH_URL.format(sc=args.sc, page=p))
