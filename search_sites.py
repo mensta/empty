@@ -80,7 +80,8 @@ def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print
                 log(f"  {site} {line}: {page} ページ、{len(got) - n_before} 件")
             except RuntimeError as e:
                 failed.append(site)
-                log(f"  WARNING: {site} は取得できませんでした。今回は {site} を含めません ({str(e)[:90]})")
+                where = f"{line} の {page} ページ目"  # page は for の変数 (ここへは取得中にしか来ない)
+                log(f"  WARNING: {site} は取得できませんでした。今回は {site} を含めません ({where}で: {str(e).split(': http')[0][:90]})")
     got = {k: v for k, v in got.items() if k[0] not in failed}
     return list(got.values()), failed
 

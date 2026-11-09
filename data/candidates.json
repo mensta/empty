@@ -25,7 +25,32 @@
   "url": "https://suumo.jp/chintai/bc_100519991645/"
  },
  {
-  "id": "bc_100535844409",
+  "id": "bc_100509237815",
+  "site": "SUUMO",
+  "also": "",
+  "group": "鉄骨・ALC",
+  "line": "東横",
+  "station": "都立大学",
+  "walk": 7,
+  "building": "東急東横線 都立大学駅 3階建 築6年",
+  "rent": 13.6,
+  "admin": 0.6,
+  "total": 14.2,
+  "area": 30.19,
+  "age": 6,
+  "structure": "軽量鉄骨",
+  "floor": "2階/3階建",
+  "photos": 13,
+  "shiki": "13.6",
+  "rei": "13.6",
+  "move_in": "相談",
+  "initial": 43.6,
+  "initial_note": "",
+  "note": "物件名なし",
+  "url": "https://suumo.jp/chintai/bc_100509237815/"
+ },
+ {
+  "id": "bc_100533739497",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "鉄骨・ALC",
@@ -43,11 +68,11 @@
   "photos": 13,
   "shiki": "13.7",
   "rei": "13.7",
-  "move_in": "相談",
-  "initial": 51.4,
+  "move_in": "26年11月中旬",
+  "initial": 49.6,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535844409/"
+  "url": "https://suumo.jp/chintai/bc_100533739497/"
  },
  {
   "id": "bc_100531505196",
@@ -125,7 +150,7 @@
   "url": "https://suumo.jp/chintai/bc_100514254048/"
  },
  {
-  "id": "bc_100519467018",
+  "id": "bc_100524491649",
   "site": "SUUMO",
   "also": "",
   "group": "RC",
@@ -139,43 +164,18 @@
   "area": 43.31,
   "age": 15,
   "structure": "鉄筋コン",
-  "floor": "3階/4階建",
+  "floor": "2階/4階建",
   "photos": 14,
   "shiki": "-",
   "rei": "14",
-  "move_in": "即",
+  "move_in": "26年11月中旬",
   "initial": 43.9,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100519467018/"
+  "url": "https://suumo.jp/chintai/bc_100524491649/"
  },
  {
-  "id": "bc_100522961372",
-  "site": "SUUMO",
-  "also": "",
-  "group": "RC",
-  "line": "目黒",
-  "station": "洗足",
-  "walk": 6,
-  "building": "Solid Qualia D’2",
-  "rent": 13.7,
-  "admin": 0.8,
-  "total": 14.5,
-  "area": 31.4,
-  "age": 15,
-  "structure": "鉄筋コン",
-  "floor": "1階/4階建",
-  "photos": 13,
-  "shiki": "13.7",
-  "rei": "13.7",
-  "move_in": "即",
-  "initial": 51.7,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100522961372/"
- },
- {
-  "id": "bc_100518967333",
+  "id": "bc_100518975976",
   "site": "SUUMO",
   "also": "",
   "group": "RC",
@@ -197,7 +197,7 @@
   "initial": 52.9,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100518967333/"
+  "url": "https://suumo.jp/chintai/bc_100518975976/"
  },
  {
   "id": "bc_100534074082",
@@ -250,14 +250,14 @@
   "url": "https://suumo.jp/chintai/bc_100534537725/"
  },
  {
-  "id": "bc_100533811085",
+  "id": "bc_100533489882",
   "site": "SUUMO",
   "also": "",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
   "walk": 6,
-  "building": "クレストアベニュー祐天寺",
+  "building": "東急東横線 祐天寺駅 5階建 築4年",
   "rent": 13.8,
   "admin": 1.0,
   "total": 14.8,
@@ -265,14 +265,14 @@
   "age": 4,
   "structure": "鉄筋コン",
   "floor": "4階/5階建",
-  "photos": 11,
+  "photos": 12,
   "shiki": "13.8",
   "rei": "13.8",
   "move_in": "即",
   "initial": 51.1,
   "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100533811085/"
+  "note": "物件名なし",
+  "url": "https://suumo.jp/chintai/bc_100533489882/"
  },
  {
   "id": "bc_100524003865",
@@ -300,13 +300,13 @@
   "url": "https://suumo.jp/chintai/bc_100524003865/"
  },
  {
-  "id": "bc_100535840147",
+  "id": "bc_100535511169",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "都立大学",
-  "walk": 6,
+  "walk": 7,
   "building": "ブランドール都立大",
   "rent": 14.8,
   "admin": 1.0,
@@ -322,17 +322,17 @@
   "initial": 70.2,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535840147/"
+  "url": "https://suumo.jp/chintai/bc_100535511169/"
  },
  {
-  "id": "bc_100534954610",
+  "id": "bc_100535656467",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
   "line": "目黒",
   "station": "西小山",
   "walk": 7,
-  "building": "ラドゥセール武蔵小山",
+  "building": "東急目黒線 西小山駅 4階建 築6年",
   "rent": 15.3,
   "admin": 0.5,
   "total": 15.8,
@@ -340,14 +340,14 @@
   "age": 6,
   "structure": "鉄筋コン",
   "floor": "2階/4階建",
-  "photos": 11,
+  "photos": 13,
   "shiki": "-",
   "rei": "-",
-  "move_in": "26年11月下旬",
-  "initial": 16.8,
-  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100534954610/"
+  "move_in": "相談",
+  "initial": 25.2,
+  "initial_note": "仲手は1.1ヶ月と仮定",
+  "note": "物件名なし",
+  "url": "https://suumo.jp/chintai/bc_100535656467/"
  },
  {
   "id": "bc_100529870362",
@@ -500,7 +500,7 @@
   "url": "https://suumo.jp/chintai/bc_100530923031/"
  },
  {
-  "id": "bc_100536043189",
+  "id": "bc_100528914990",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
@@ -515,23 +515,23 @@
   "age": 13,
   "structure": "鉄筋コン",
   "floor": "2階/3階建",
-  "photos": 11,
+  "photos": 13,
   "shiki": "15.8",
   "rei": "15.8",
   "move_in": "即",
-  "initial": 48.4,
-  "initial_note": "",
+  "initial": 49.0,
+  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100536043189/"
+  "url": "https://suumo.jp/chintai/bc_100528914990/"
  },
  {
-  "id": "bc_100535829963",
+  "id": "bc_100535474646",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "祐天寺",
-  "walk": 5,
+  "walk": 6,
   "building": "ヴァンテジオ目黒uno",
   "rent": 15.3,
   "admin": 1.2,
@@ -539,15 +539,15 @@
   "area": 40.16,
   "age": 8,
   "structure": "鉄筋コン",
-  "floor": "4階/地下1地上4階建",
-  "photos": 13,
+  "floor": "3階/地下1地上4階建",
+  "photos": 9,
   "shiki": "15.3",
   "rei": "15.3",
-  "move_in": "相談",
-  "initial": 57.7,
-  "initial_note": "仲手は1.1ヶ月と仮定",
+  "move_in": "即",
+  "initial": 47.4,
+  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535829963/"
+  "url": "https://suumo.jp/chintai/bc_100535474646/"
  },
  {
   "id": "bc_100524958525",
@@ -650,7 +650,7 @@
   "url": "https://suumo.jp/chintai/bc_100533335282/"
  },
  {
-  "id": "bc_100522830012",
+  "id": "bc_100525243275",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
@@ -672,7 +672,7 @@
   "initial": 59.4,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "定期借家",
-  "url": "https://suumo.jp/chintai/bc_100522830012/"
+  "url": "https://suumo.jp/chintai/bc_100525243275/"
  },
  {
   "id": "bc_100522550676",
@@ -725,7 +725,7 @@
   "url": "https://suumo.jp/chintai/bc_100527704603/"
  },
  {
-  "id": "bc_100535836843",
+  "id": "bc_100536142949",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
@@ -739,18 +739,18 @@
   "area": 43.51,
   "age": 8,
   "structure": "鉄筋コン",
-  "floor": "2階/地下1地上4階建",
-  "photos": 13,
+  "floor": "B1-4階/地下1地上4階建",
+  "photos": 14,
   "shiki": "15.8",
   "rei": "15.8",
   "move_in": "即",
-  "initial": 59.5,
+  "initial": 57.5,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535836843/"
+  "url": "https://suumo.jp/chintai/bc_100536142949/"
  },
  {
-  "id": "bc_100529794029",
+  "id": "bc_100536210053",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
@@ -769,10 +769,10 @@
   "shiki": "15.5",
   "rei": "15.5",
   "move_in": "相談",
-  "initial": 50.0,
-  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
+  "initial": 58.5,
+  "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "定期借家",
-  "url": "https://suumo.jp/chintai/bc_100529794029/"
+  "url": "https://suumo.jp/chintai/bc_100536210053/"
  },
  {
   "id": "bc_100527838272",
@@ -825,7 +825,7 @@
   "url": "https://suumo.jp/chintai/bc_100531675144/"
  },
  {
-  "id": "bc_100535204151",
+  "id": "bc_100535218181",
   "site": "SUUMO",
   "also": "",
   "group": "鉄骨・ALC",
@@ -847,7 +847,7 @@
   "initial": 51.3,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535204151/"
+  "url": "https://suumo.jp/chintai/bc_100535218181/"
  },
  {
   "id": "bc_100535514166",
@@ -875,7 +875,7 @@
   "url": "https://suumo.jp/chintai/bc_100535514166/"
  },
  {
-  "id": "bc_100534955310",
+  "id": "bc_100534954654",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
@@ -897,35 +897,10 @@
   "initial": 18.4,
   "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100534955310/"
+  "url": "https://suumo.jp/chintai/bc_100534954654/"
  },
  {
-  "id": "bc_100533775218",
-  "site": "SUUMO",
-  "also": "",
-  "group": "鉄骨・ALC",
-  "line": "東横",
-  "station": "自由が丘",
-  "walk": 5,
-  "building": "TYD自由が丘",
-  "rent": 17.0,
-  "admin": 0.3,
-  "total": 17.3,
-  "area": 37.61,
-  "age": 8,
-  "structure": "鉄骨",
-  "floor": "2階/3階建",
-  "photos": 13,
-  "shiki": "17",
-  "rei": "17",
-  "move_in": "相談",
-  "initial": 63.2,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100533775218/"
- },
- {
-  "id": "bc_100535988467",
+  "id": "bc_100520616018",
   "site": "SUUMO",
   "also": "CHINTAI",
   "group": "RC",
@@ -940,14 +915,39 @@
   "age": 20,
   "structure": "鉄筋コン",
   "floor": "B1階/地下1地上3階建",
-  "photos": 14,
+  "photos": 13,
   "shiki": "16.4",
   "rei": "-",
-  "move_in": "相談",
-  "initial": 36.8,
-  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
+  "move_in": "即",
+  "initial": 43.1,
+  "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535988467/"
+  "url": "https://suumo.jp/chintai/bc_100520616018/"
+ },
+ {
+  "id": "bc_100529755933",
+  "site": "SUUMO",
+  "also": "",
+  "group": "RC",
+  "line": "東横",
+  "station": "都立大学",
+  "walk": 6,
+  "building": "プレジリア柿の木坂",
+  "rent": 16.0,
+  "admin": 1.5,
+  "total": 17.5,
+  "area": 33.49,
+  "age": 8,
+  "structure": "鉄筋コン",
+  "floor": "1階/地下1地上3階建",
+  "photos": 13,
+  "shiki": "16",
+  "rei": "16",
+  "move_in": "26年11月下旬",
+  "initial": 58.4,
+  "initial_note": "仲手は1.1ヶ月と仮定",
+  "note": "",
+  "url": "https://suumo.jp/chintai/bc_100529755933/"
  },
  {
   "id": "bc_100496563663",
@@ -975,31 +975,6 @@
   "url": "https://suumo.jp/chintai/bc_100496563663/"
  },
  {
-  "id": "bc_100529629385",
-  "site": "SUUMO",
-  "also": "",
-  "group": "RC",
-  "line": "東横",
-  "station": "都立大学",
-  "walk": 6,
-  "building": "東急東横線 都立大学駅 地下1地上3階建 築8年",
-  "rent": 16.0,
-  "admin": 1.5,
-  "total": 17.5,
-  "area": 33.49,
-  "age": 8,
-  "structure": "鉄筋コン",
-  "floor": "1階/地下1地上3階建",
-  "photos": 13,
-  "shiki": "16",
-  "rei": "16",
-  "move_in": "26年11月下旬",
-  "initial": 60.0,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "物件名なし",
-  "url": "https://suumo.jp/chintai/bc_100529629385/"
- },
- {
   "id": "bc_100520000169",
   "site": "SUUMO",
   "also": "",
@@ -1025,7 +1000,7 @@
   "url": "https://suumo.jp/chintai/bc_100520000169/"
  },
  {
-  "id": "bc_100536024523",
+  "id": "bc_100536072365",
   "site": "SUUMO",
   "also": "",
   "group": "鉄骨・ALC",
@@ -1047,12 +1022,12 @@
   "initial": 78.5,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100536024523/"
+  "url": "https://suumo.jp/chintai/bc_100536072365/"
  },
  {
-  "id": "bc_100535838465",
+  "id": "bc_100536143025",
   "site": "SUUMO",
-  "also": "CHINTAI",
+  "also": "CHINTAI・at home",
   "group": "RC",
   "line": "目黒",
   "station": "不動前",
@@ -1069,35 +1044,10 @@
   "shiki": "16",
   "rei": "-",
   "move_in": "即",
-  "initial": 44.6,
-  "initial_note": "仲手は1.1ヶ月と仮定",
+  "initial": 35.9,
+  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535838465/"
- },
- {
-  "id": "bc_100534071236",
-  "site": "SUUMO",
-  "also": "",
-  "group": "RC",
-  "line": "目黒",
-  "station": "西小山",
-  "walk": 4,
-  "building": "ハウオリ・ハレ",
-  "rent": 17.0,
-  "admin": 0.5,
-  "total": 17.5,
-  "area": 45.98,
-  "age": 8,
-  "structure": "鉄筋コン",
-  "floor": "1階/4階建",
-  "photos": 14,
-  "shiki": "-",
-  "rei": "17",
-  "move_in": "26年12月上旬",
-  "initial": 53.2,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100534071236/"
+  "url": "https://suumo.jp/chintai/bc_100536143025/"
  },
  {
   "id": "bc_100534003035",
@@ -1200,7 +1150,7 @@
   "url": "https://suumo.jp/chintai/bc_100535138279/"
  },
  {
-  "id": "bc_100534723887",
+  "id": "bc_100533314752",
   "site": "SUUMO",
   "also": "at home",
   "group": "RC",
@@ -1218,11 +1168,11 @@
   "photos": 13,
   "shiki": "16.8",
   "rei": "16.8",
-  "move_in": "即",
-  "initial": 63.1,
-  "initial_note": "仲手は1.1ヶ月と仮定",
+  "move_in": "26年11月下旬",
+  "initial": 54.6,
+  "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
   "note": "物件名なし",
-  "url": "https://suumo.jp/chintai/bc_100534723887/"
+  "url": "https://suumo.jp/chintai/bc_100533314752/"
  },
  {
   "id": "bc_100536135768",
@@ -1325,6 +1275,31 @@
   "url": "https://suumo.jp/chintai/bc_100529198610/"
  },
  {
+  "id": "bc_100536193072",
+  "site": "SUUMO",
+  "also": "CHINTAI",
+  "group": "RC",
+  "line": "東横",
+  "station": "都立大学",
+  "walk": 5,
+  "building": "テラス都立大学",
+  "rent": 16.7,
+  "admin": 1.5,
+  "total": 18.2,
+  "area": 31.6,
+  "age": 9,
+  "structure": "鉄筋コン",
+  "floor": "2階/4階建",
+  "photos": 13,
+  "shiki": "-",
+  "rei": "-",
+  "move_in": "26年11月中旬",
+  "initial": 30.9,
+  "initial_note": "",
+  "note": "",
+  "url": "https://suumo.jp/chintai/bc_100536193072/"
+ },
+ {
   "id": "bc_100534468262",
   "site": "SUUMO",
   "also": "at home",
@@ -1348,31 +1323,6 @@
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
   "url": "https://suumo.jp/chintai/bc_100534468262/"
- },
- {
-  "id": "bc_100533864481",
-  "site": "SUUMO",
-  "also": "CHINTAI",
-  "group": "RC",
-  "line": "東横",
-  "station": "都立大学",
-  "walk": 5,
-  "building": "テラス都立大学",
-  "rent": 16.7,
-  "admin": 1.5,
-  "total": 18.2,
-  "area": 31.6,
-  "age": 9,
-  "structure": "鉄筋コン",
-  "floor": "2階/4階建",
-  "photos": 13,
-  "shiki": "-",
-  "rei": "-",
-  "move_in": "即",
-  "initial": 29.3,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100533864481/"
  },
  {
   "id": "bc_100535888454",
@@ -1400,7 +1350,7 @@
   "url": "https://suumo.jp/chintai/bc_100535888454/"
  },
  {
-  "id": "bc_100535836520",
+  "id": "bc_100534367594",
   "site": "SUUMO",
   "also": "CHINTAI・at home",
   "group": "RC",
@@ -1419,13 +1369,13 @@
   "shiki": "16.8",
   "rei": "16.8",
   "move_in": "即",
-  "initial": 63.2,
+  "initial": 61.2,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100535836520/"
+  "url": "https://suumo.jp/chintai/bc_100534367594/"
  },
  {
-  "id": "bc_100528823191",
+  "id": "bc_100528821650",
   "site": "SUUMO",
   "also": "",
   "group": "RC",
@@ -1447,7 +1397,7 @@
   "initial": 55.9,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100528823191/"
+  "url": "https://suumo.jp/chintai/bc_100528821650/"
  },
  {
   "id": "bc_100518132836",
@@ -1475,14 +1425,14 @@
   "url": "https://suumo.jp/chintai/bc_100518132836/"
  },
  {
-  "id": "bc_100535934376",
+  "id": "bc_100536103949",
   "site": "SUUMO",
   "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "自由が丘",
   "walk": 7,
-  "building": "東急東横線 自由が丘駅 4階建 築8年",
+  "building": "メイプルファーム自由が丘",
   "rent": 18.0,
   "admin": 0.5,
   "total": 18.5,
@@ -1490,49 +1440,49 @@
   "age": 8,
   "structure": "気泡コン",
   "floor": "1階/4階建",
-  "photos": 14,
+  "photos": 13,
   "shiki": "18",
   "rei": "18",
   "move_in": "26年12月上旬",
   "initial": 67.0,
   "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "物件名なし・定期借家",
-  "url": "https://suumo.jp/chintai/bc_100535934376/"
+  "note": "定期借家",
+  "url": "https://suumo.jp/chintai/bc_100536103949/"
  },
  {
-  "id": "bc_100534827785",
+  "id": "bc_100534978264",
   "site": "SUUMO",
   "also": "",
   "group": "鉄骨・ALC",
   "line": "東横",
   "station": "自由が丘",
   "walk": 7,
-  "building": "東急東横線 自由が丘駅 4階建 築8年",
+  "building": "メイプルファーム自由が丘",
   "rent": 18.0,
   "admin": 0.5,
   "total": 18.5,
   "area": 38.31,
   "age": 8,
-  "structure": "鉄骨",
+  "structure": "気泡コン",
   "floor": "1階/4階建",
-  "photos": 13,
+  "photos": 14,
   "shiki": "18",
   "rei": "18",
-  "move_in": "26年12月中旬",
-  "initial": 74.3,
+  "move_in": "相談",
+  "initial": 76.5,
   "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "物件名なし・定期借家",
-  "url": "https://suumo.jp/chintai/bc_100534827785/"
+  "note": "定期借家",
+  "url": "https://suumo.jp/chintai/bc_100534978264/"
  },
  {
-  "id": "bc_100528506962",
+  "id": "bc_100528488334",
   "site": "SUUMO",
   "also": "",
   "group": "鉄骨・ALC",
   "line": "目黒",
   "station": "奥沢",
   "walk": 6,
-  "building": "ルミエール田園調布",
+  "building": "東急目黒線 奥沢駅 3階建 築17年",
   "rent": 17.4,
   "admin": 1.1,
   "total": 18.5,
@@ -1540,24 +1490,24 @@
   "age": 17,
   "structure": "気泡コン",
   "floor": "3階/3階建",
-  "photos": 14,
+  "photos": 15,
   "shiki": "17.4",
   "rei": "17.4",
   "move_in": "即",
-  "initial": 65.0,
+  "initial": 65.2,
   "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100528506962/"
+  "note": "物件名なし",
+  "url": "https://suumo.jp/chintai/bc_100528488334/"
  },
  {
-  "id": "bc_100536104696",
+  "id": "bc_100536131694",
   "site": "SUUMO",
   "also": "at home",
   "group": "RC",
   "line": "目黒",
   "station": "洗足",
   "walk": 2,
-  "building": "東急目黒線 洗足駅 4階建 築16年",
+  "building": "洗足館",
   "rent": 17.5,
   "admin": 1.0,
   "total": 18.5,
@@ -1565,14 +1515,14 @@
   "age": 16,
   "structure": "鉄筋コン",
   "floor": "3階/4階建",
-  "photos": 13,
+  "photos": 11,
   "shiki": "17.5",
   "rei": "17.5",
-  "move_in": "相談",
-  "initial": 75.0,
+  "move_in": "26年11月中旬",
+  "initial": 64.4,
   "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "物件名なし",
-  "url": "https://suumo.jp/chintai/bc_100536104696/"
+  "note": "",
+  "url": "https://suumo.jp/chintai/bc_100536131694/"
  },
  {
   "id": "bc_100536097746",
@@ -1600,7 +1550,7 @@
   "url": "https://suumo.jp/chintai/bc_100536097746/"
  },
  {
-  "id": "bc_100498597374",
+  "id": "bc_100536189098",
   "site": "SUUMO",
   "also": "",
   "group": "RC",
@@ -1615,14 +1565,14 @@
   "age": 1,
   "structure": "鉄筋コン",
   "floor": "3階/7階建",
-  "photos": 10,
+  "photos": 13,
   "shiki": "17.5",
   "rei": "17.5",
   "move_in": "26年12月下旬",
-  "initial": 65.9,
+  "initial": 63.5,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100498597374/"
+  "url": "https://suumo.jp/chintai/bc_100536189098/"
  },
  {
   "id": "bc_100535434936",
@@ -1725,7 +1675,7 @@
   "url": "https://suumo.jp/chintai/bc_100535992424/"
  },
  {
-  "id": "bc_100535839011",
+  "id": "bc_100499567059",
   "site": "SUUMO",
   "also": "at home",
   "group": "RC",
@@ -1744,10 +1694,10 @@
   "shiki": "17.65",
   "rei": "-",
   "move_in": "即",
-  "initial": 48.1,
+  "initial": 46.5,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "定期借家",
-  "url": "https://suumo.jp/chintai/bc_100535839011/"
+  "url": "https://suumo.jp/chintai/bc_100499567059/"
  },
  {
   "id": "bc_100524261176",
@@ -1775,6 +1725,31 @@
   "url": "https://suumo.jp/chintai/bc_100524261176/"
  },
  {
+  "id": "bc_100531895802",
+  "site": "SUUMO",
+  "also": "CHINTAI・at home",
+  "group": "RC",
+  "line": "目黒",
+  "station": "奥沢",
+  "walk": 4,
+  "building": "グランパセオ自由が丘奥沢II",
+  "rent": 17.4,
+  "admin": 1.5,
+  "total": 18.9,
+  "area": 33.91,
+  "age": 0,
+  "structure": "鉄筋コン",
+  "floor": "1階/5階建",
+  "photos": 13,
+  "shiki": "-",
+  "rei": "-",
+  "move_in": "即",
+  "initial": 28.6,
+  "initial_note": "仲手は1.1ヶ月と仮定",
+  "note": "",
+  "url": "https://suumo.jp/chintai/bc_100531895802/"
+ },
+ {
   "id": "bc_100535838765",
   "site": "SUUMO",
   "also": "at home",
@@ -1798,31 +1773,6 @@
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "",
   "url": "https://suumo.jp/chintai/bc_100535838765/"
- },
- {
-  "id": "bc_100531893264",
-  "site": "SUUMO",
-  "also": "CHINTAI",
-  "group": "RC",
-  "line": "目黒",
-  "station": "奥沢",
-  "walk": 4,
-  "building": "グランパセオ自由が丘奥沢II",
-  "rent": 17.4,
-  "admin": 1.5,
-  "total": 18.9,
-  "area": 33.91,
-  "age": 0,
-  "structure": "鉄筋コン",
-  "floor": "1階/5階建",
-  "photos": 13,
-  "shiki": "-",
-  "rei": "-",
-  "move_in": "即",
-  "initial": 28.6,
-  "initial_note": "仲手は1.1ヶ月と仮定",
-  "note": "",
-  "url": "https://suumo.jp/chintai/bc_100531893264/"
  },
  {
   "id": "bc_100527313211",
@@ -1850,7 +1800,7 @@
   "url": "https://suumo.jp/chintai/bc_100527313211/"
  },
  {
-  "id": "bc_100487926058",
+  "id": "bc_100533680625",
   "site": "SUUMO",
   "also": "",
   "group": "RC",
@@ -1872,10 +1822,10 @@
   "initial": 57.7,
   "initial_note": "仲手は1.1ヶ月と仮定・保証料は含まず",
   "note": "",
-  "url": "https://suumo.jp/chintai/bc_100487926058/"
+  "url": "https://suumo.jp/chintai/bc_100533680625/"
  },
  {
-  "id": "bc_100535830919",
+  "id": "bc_100507742259",
   "site": "SUUMO",
   "also": "CHINTAI・at home",
   "group": "RC",
@@ -1894,10 +1844,10 @@
   "shiki": "17.8",
   "rei": "-",
   "move_in": "即",
-  "initial": 48.5,
+  "initial": 46.9,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "定期借家",
-  "url": "https://suumo.jp/chintai/bc_100535830919/"
+  "url": "https://suumo.jp/chintai/bc_100507742259/"
  },
  {
   "id": "bc_100524494717",
@@ -1915,7 +1865,7 @@
   "age": 0,
   "structure": "鉄筋コン",
   "floor": "4階/4階建",
-  "photos": 12,
+  "photos": 14,
   "shiki": "-",
   "rei": "-",
   "move_in": "即",
@@ -1950,9 +1900,9 @@
   "url": "https://www.chintai.net/detail/bk-C010086990000005115186090001/"
  },
  {
-  "id": "bc_100535834202",
+  "id": "bc_100529298224",
   "site": "SUUMO",
-  "also": "CHINTAI・at home",
+  "also": "CHINTAI",
   "group": "RC",
   "line": "東横",
   "station": "学芸大学",
@@ -1964,15 +1914,15 @@
   "area": 40.06,
   "age": 0,
   "structure": "鉄筋コン",
-  "floor": "2階/4階建",
+  "floor": "3階/4階建",
   "photos": 13,
   "shiki": "17.8",
   "rei": "-",
   "move_in": "即",
-  "initial": 49.0,
+  "initial": 47.0,
   "initial_note": "仲手は1.1ヶ月と仮定",
   "note": "定期借家",
-  "url": "https://suumo.jp/chintai/bc_100535834202/"
+  "url": "https://suumo.jp/chintai/bc_100529298224/"
  },
  {
   "id": "bc_100516880270",
