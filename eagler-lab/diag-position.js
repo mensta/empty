@@ -17,8 +17,9 @@ const L = require('./lib.js');
     e.D = e.fS = e.mT = x; e.J = e.gr = e.l2 = y; e.E = e.fT = e.mU = z;
     window.__t0 = performance.now(); window.__wrote = x;
   });
+  await render(false); // lighten the load so the integrated server can keep up
   const t0 = Date.now(); const rows = []; const seen = new Set();
-  while (Date.now() - t0 < 4000) {
+  while (Date.now() - t0 < 12000) {
     const r = await Promise.race([
       page.evaluate(() => { const e = window.__eagMC().bR; return [Math.round(performance.now() - window.__t0), +e.D.toFixed(2), +e.dz.cG.toFixed(2)]; }),
       new Promise((res) => setTimeout(() => res(null), 3000)),
@@ -28,6 +29,11 @@ const L = require('./lib.js');
   }
   console.log('TIMELINE [ms since write, posX, aabb.minX]  (written posX = start+5)');
   for (const r of rows) console.log(' ', JSON.stringify(r));
+  // server-side oracle: "/tp @p ~ ~ ~" echoes the position the SERVER holds for the player
+  await render(true);
+  await chat('/tp @p ~ ~ ~');
+  await page.waitForTimeout(2500);
+  console.log('CLIENT now', JSON.stringify(await page.evaluate(() => { const e = window.__eagMC().bR; return [e.D, e.J, e.E].map((v) => +v.toFixed(2)); })));
   console.log('SERVER/CLIENT LOG lines mentioning movement:');
   console.log(logs.filter((l) => /moved|wrongly|too quickly|teleport|IntegratedServer.*WARN/i.test(l)).slice(-10).join('\n') || '(none)');
   await browser.close();
