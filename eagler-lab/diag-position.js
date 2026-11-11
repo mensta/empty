@@ -20,7 +20,7 @@ const L = require('./lib.js');
   const t0 = Date.now(); const rows = []; const seen = new Set();
   while (Date.now() - t0 < 4000) {
     const r = await Promise.race([
-      page.evaluate(() => { const e = window.__eagMC().bR; return [Math.round(performance.now() - window.__t0), +e.D.toFixed(2), +e.cG.toFixed(2)]; }),
+      page.evaluate(() => { const e = window.__eagMC().bR; return [Math.round(performance.now() - window.__t0), +e.D.toFixed(2), +e.dz.cG.toFixed(2)]; }),
       new Promise((res) => setTimeout(() => res(null), 3000)),
     ]);
     if (!r) { console.log('page unresponsive for >3s'); break; }
