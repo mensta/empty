@@ -48,5 +48,18 @@ exports.launch = async ({ html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS 
     await click(400, 665, 25000);                      // Create New World
     await page.waitForTimeout(15000);
   };
-  return { browser, page, logs, click, shot, chat, render, glStats, enterWorld };
+  // Build-specific minified field names (EaglercraftX 1.8-u53 JS build). Found empirically, see NOTES.
+  //   mc = window.__eagMC() (needs the hook patch), mc.bR = thePlayer, mc.bR.dz = bounding box
+  //   D/J/E = posX/Y/Z, fS/gr/fT = lastTickPos, mT/l2/mU = prevPos, bN/cR = yaw/pitch, hq/ip = prevYaw/prevPitch
+  //   AABB: cG/b4/cF = min x/y/z, cL/cI/cM = max x/y/z
+  const getState = () => page.evaluate(() => {
+    const e = window.__eagMC().bR; return [e.D, e.J, e.E, e.bN, e.cR].map((v) => +v.toFixed(3));
+  });
+  const setCamera = (x, y, z, yaw, pitch) => page.evaluate(([x, y, z, yaw, pitch]) => {
+    const e = window.__eagMC().bR, bb = e.dz, w = bb.cL - bb.cG, h = bb.cI - bb.b4;
+    bb.cG = x - w / 2; bb.cL = x + w / 2; bb.b4 = y; bb.cI = y + h; bb.cF = z - w / 2; bb.cM = z + w / 2;
+    e.D = e.fS = e.mT = x; e.J = e.gr = e.l2 = y; e.E = e.fT = e.mU = z;
+    e.bN = e.hq = yaw; e.cR = e.ip = pitch;
+  }, [x, y, z, yaw, pitch]);
+  return { browser, page, logs, click, shot, chat, render, glStats, enterWorld, getState, setCamera };
 };
