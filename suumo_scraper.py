@@ -181,7 +181,7 @@ def as_layouts(layout):
     return out
 
 
-def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print, min_photos=3):
+def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print, min_photos=3, include_admin=False):
     layouts = as_layouts(layout)
     md = "&md=".join(LAYOUT_CODES[x] for x in layouts)  # SUUMO accepts several md values (OR)
     names = {LINES[l][1] for l in lines}
@@ -215,7 +215,9 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
         if r["n_photos"] < min_photos or r["n_interior"] < 1:
             few_photos += 1
             continue
-        if (r["layout"] in layouts and r["rent_yen"] is not None and r["rent_yen"] <= max_rent_man * 10000
+        # SUUMO's own rent filter (ct=) ignores the management fee, so it only pre-filters; the cap is applied here.
+        cost = r["total_yen"] if include_admin else r["rent_yen"]
+        if (r["layout"] in layouts and r["rent_yen"] is not None and cost is not None and cost <= max_rent_man * 10000
                 and r["age"] is not None and r["age"] <= max_age and w and w[0] <= walk):
             r["walk_min"], r["station"] = w
             r["access"] = " / ".join(r["access_list"])

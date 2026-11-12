@@ -224,14 +224,14 @@ def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max
     return out
 
 
-def make_conditions(layout, max_rent, lines, prefs, walk, max_age, min_area, min_photos, sites="SUUMO"):
+def make_conditions(layout, max_rent, lines, prefs, walk, max_age, min_area, min_photos, sites="SUUMO", include_admin=False):
     """画面上部の検索条件。run.py に渡した条件から作るので、表示と実際の検索条件がずれない"""
     line_names = "・".join(m.LINES[l][1] for l in lines)
     pref_names = "・".join(m.PREFS[p] for p in prefs)
     return [
         {"key": "sites", "label": "掲載サイト", "text": sites},
         {"key": "layout", "label": "間取り", "text": layout if isinstance(layout, str) else "・".join(layout)},
-        {"key": "rent_max", "label": "家賃", "text": f"{max_rent:g}万円以下", "value": max_rent},
+        {"key": "rent_max", "label": "家賃", "text": f"{max_rent:g}万円以下" + ("(管理費込み)" if include_admin else ""), "value": max_rent},
         {"key": "line", "label": "沿線", "text": f"{line_names}({pref_names})"},
         {"key": "walk", "label": "駅徒歩", "text": f"{walk}分以内"},
         {"key": "age", "label": "築年数", "text": f"{max_age}年以内"},

@@ -75,7 +75,9 @@ def main() -> int:
     ap.add_argument("--lines", nargs="+", default=["toyoko", "meguro"], choices=list(sc.LINES))
     ap.add_argument("--prefs", nargs="+", default=["tokyo"], choices=list(sc.PREFS))
     ap.add_argument("--layout", nargs="+", default=["1LDK", "2DK", "2LDK"], choices=list(sc.LAYOUT_CODES), help="room layouts to include (any of them)")
-    ap.add_argument("--max-rent", type=float, default=19.0, help="家賃の上限(万円)")
+    ap.add_argument("--max-rent", type=float, default=19.0, help="家賃の上限(万円)。既定は管理費込み (--no-include-admin で家賃のみ)")
+    ap.add_argument("--include-admin", action=argparse.BooleanOptionalAction, default=True,
+                    help="家賃の上限を、管理費・共益費を足した額で判定する (既定: 足す)")
     ap.add_argument("--walk", type=int, default=10, help="駅徒歩の上限(分)")
     ap.add_argument("--max-age", type=int, default=35, help="築年数の上限")
     ap.add_argument("--min-area", type=float, default=28.0, help="専有面積がこの値(㎡)より広い部屋だけ")
@@ -110,7 +112,7 @@ def main() -> int:
     else:
         log("[1/5] SUUMO を検索")
         rows, total = sc.search_lines(web.new_session(), a.lines, a.prefs, a.layout, a.max_rent, a.walk, a.max_age,
-                                      a.delay, a.max_pages, log=log, min_photos=a.min_photos)
+                                      a.delay, a.max_pages, log=log, min_photos=a.min_photos, include_admin=a.include_admin)
         log(f"      掲載 {total} 件を取得 -> 条件に合う部屋 {len(rows)} 室")
         if a.raw and rows:
             write_raw(a.raw, rows)
@@ -141,7 +143,7 @@ def main() -> int:
             log(f"      検索を省略: {raw_path} から {len(raw)} 件")
         else:
             raw = collect_others(a, raw_path, out_dir)
-        found = ss.filter_rows(raw, a.lines, a.layout, a.max_rent, a.walk, a.max_age, a.min_area)
+        found = ss.filter_rows(raw, a.lines, a.layout, a.max_rent, a.walk, a.max_age, a.min_area, include_admin=a.include_admin)
         log(f"      条件に合う部屋: {len(found)} 件")
         by_url = {r["url"]: r for r in rows}
         suumo_key = {}
@@ -162,9 +164,9 @@ def main() -> int:
 
     # 5) 検証してから書き出す (前回との差も表示)
     log("[5/5] 検証と書き出し")
-    conds = cand.make_conditions(a.layout, a.max_rent, a.lines, a.prefs, a.walk, a.max_age, a.min_area, a.min_photos, site_names)
+    conds = cand.make_conditions(a.layout, a.max_rent, a.lines, a.prefs, a.walk, a.max_age, a.min_area, a.min_photos, site_names, include_admin=a.include_admin)
     errors, warns = validate.validate(out, plan_rows, conds, max_rent=a.max_rent, walk=a.walk, max_age=a.max_age,
-                                      min_area=a.min_area, min_photos=a.min_photos, layouts=a.layout)
+                                      min_area=a.min_area, min_photos=a.min_photos, layouts=a.layout, include_admin=a.include_admin)
     for w in warns:
         log(f"  警告: {w}")
     if errors:

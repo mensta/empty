@@ -111,7 +111,7 @@ def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print
     return list(got.values()), failed
 
 
-def filter_rows(rows, lines, layout, max_rent, walk, max_age, min_area, pref_prefix="東京都"):
+def filter_rows(rows, lines, layout, max_rent, walk, max_age, min_area, pref_prefix="東京都", include_admin=False):
     """条件に合う物件だけ残し、最寄り駅 (station) と徒歩 (walk_min) を付ける。layout は名前または名前のリスト (完全一致。2SLDK などは含めない)"""
     layouts = sc.as_layouts(layout)
     out = []
@@ -119,7 +119,8 @@ def filter_rows(rows, lines, layout, max_rent, walk, max_age, min_area, pref_pre
         w = best_walk(r["access"], lines)
         addr = unicodedata.normalize("NFKC", r["address"])
         in_pref = addr.startswith(pref_prefix) or (r["site"] == "at home" and not re.match(r"(東京都|神奈川県|埼玉県|千葉県)", addr))
-        if (r["layout"] in layouts and r["rent_yen"] and r["rent_yen"] <= max_rent * 10000 and w and w[0] <= walk
+        cost = (r["rent_yen"] or 0) + ((r.get("admin_yen") or 0) if include_admin else 0)  # admin_yen None = no fee listed
+        if (r["layout"] in layouts and r["rent_yen"] and cost <= max_rent * 10000 and w and w[0] <= walk
                 and r["age"] is not None and r["age"] <= max_age and r["area_m2"] and r["area_m2"] > min_area and in_pref):
             out.append({**r, "walk_min": w[0], "station": w[1]})
     return out

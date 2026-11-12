@@ -7,7 +7,7 @@
 import re
 
 
-def validate(cands, plans, conds, *, max_rent, walk, max_age, min_area, min_photos, layouts=None):
+def validate(cands, plans, conds, *, max_rent, walk, max_age, min_area, min_photos, layouts=None, include_admin=False):
     errors, warnings = [], []
     if not cands:
         return ["候補が0件"], warnings
@@ -27,8 +27,9 @@ def validate(cands, plans, conds, *, max_rent, walk, max_age, min_area, min_phot
             errors.append(f"間取りが条件外 ({r.get('layout')}): {name}")
         if not (r["area"] > min_area):
             errors.append(f"広さが条件外 ({r['area']}㎡): {name}")
-        if r["rent"] > max_rent + 1e-9:
-            errors.append(f"家賃が条件外 ({r['rent']}万円): {name}")
+        cost = r["total"] if include_admin else r["rent"]
+        if cost > max_rent + 1e-9:
+            errors.append(f"家賃が条件外 ({'管理費込み ' if include_admin else ''}{cost}万円): {name}")
         if r["walk"] > walk:
             errors.append(f"徒歩が条件外 ({r['walk']}分): {name}")
         if r["age"] > max_age:

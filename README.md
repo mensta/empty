@@ -30,7 +30,8 @@ python search_sites.py --sites "HOME'S" --out h.csv
 ## 検索から候補JSONまで (1コマンド)
 
 ```bash
-python run.py        # 東横線・目黒線 / 東京都側 / 1LDK・2DK・2LDK / 19万円以下 / 徒歩10分 / 築35年 / 28㎡より広い / 木造除外 -> data/candidates.json
+python run.py        # 東横線・目黒線 / 東京都側 / 1LDK・2DK・2LDK / 家賃+管理費 19万円以下 / 徒歩10分 / 築35年 / 28㎡より広い / 木造除外 -> data/candidates.json
+python run.py --no-include-admin   # 家賃の上限を、管理費を含めずに判定する
 ```
 
 詳細は `run.py --help` と `AGENTS.md`。公開は `python scripts/publish_s3.py` (S3)。
