@@ -2,18 +2,18 @@
  {
   "key": "sites",
   "label": "掲載サイト",
-  "text": "SUUMO・at home・CHINTAI"
+  "text": "SUUMO"
  },
  {
   "key": "layout",
   "label": "間取り",
-  "text": "1LDK"
+  "text": "1LDK・2DK・2LDK"
  },
  {
   "key": "rent_max",
   "label": "家賃",
-  "text": "18万円以下",
-  "value": 18.0
+  "text": "19万円以下",
+  "value": 19.0
  },
  {
   "key": "line",
@@ -23,12 +23,12 @@
  {
   "key": "walk",
   "label": "駅徒歩",
-  "text": "7分以内"
+  "text": "10分以内"
  },
  {
   "key": "age",
   "label": "築年数",
-  "text": "20年以内"
+  "text": "35年以内"
  },
  {
   "key": "area",

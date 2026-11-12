@@ -173,7 +173,17 @@ def check_coverage(label, hits, got, pages, max_pages, log=print):
         log(f"  WARNING: {label}: 該当 {hits} 件に対し {got} 件 ({got / hits:.0%})。重複を除いた数としてはやや少なめです")
 
 
+def as_layouts(layout):
+    """A layout name or a list of names -> list. Raises KeyError for unknown names."""
+    out = [layout] if isinstance(layout, str) else list(layout)
+    for x in out:
+        LAYOUT_CODES[x]
+    return out
+
+
 def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, delay, max_pages, log=print, min_photos=3):
+    layouts = as_layouts(layout)
+    md = "&md=".join(LAYOUT_CODES[x] for x in layouts)  # SUUMO accepts several md values (OR)
     names = {LINES[l][1] for l in lines}
     wl = next((s for s in WALK_STEPS if s >= walk), 20)
     seen: Dict[str, Dict] = {}
@@ -184,7 +194,7 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
             log(f"[{PREFS[pref]} {LINES[line][1]}] stations={len(ek)}")
             before, hits_n = len(seen), 0
             for page in range(1, max_pages + 1):
-                url = LINE_URL.format(ra=ra, rn=rn, ek=ek_q, rent=f"{max_rent_man:.1f}", walk=wl, md=LAYOUT_CODES[layout], page=page)
+                url = LINE_URL.format(ra=ra, rn=rn, ek=ek_q, rent=f"{max_rent_man:.1f}", walk=wl, md=md, page=page)
                 soup = fetch(session, url)
                 if page == 1:
                     log(f"  hits: {total_hits(soup)}")
@@ -205,7 +215,7 @@ def search_lines(session, lines, prefs, layout, max_rent_man, walk, max_age, del
         if r["n_photos"] < min_photos or r["n_interior"] < 1:
             few_photos += 1
             continue
-        if (r["layout"] == layout and r["rent_yen"] is not None and r["rent_yen"] <= max_rent_man * 10000
+        if (r["layout"] in layouts and r["rent_yen"] is not None and r["rent_yen"] <= max_rent_man * 10000
                 and r["age"] is not None and r["age"] <= max_age and w and w[0] <= walk):
             r["walk_min"], r["station"] = w
             r["access"] = " / ".join(r["access_list"])
@@ -246,15 +256,20 @@ def main() -> int:
     ap.add_argument("--out", default="out.csv")
     ap.add_argument("--lines", nargs="*", choices=list(LINES), help="沿線指定モード (例: toyoko meguro)")
     ap.add_argument("--prefs", nargs="*", default=["tokyo", "kanagawa"], choices=list(PREFS))
-    ap.add_argument("--layout", default="1LDK", choices=list(LAYOUT_CODES))
+    ap.add_argument("--layout", nargs="+", default=["1LDK"], choices=list(LAYOUT_CODES))
     ap.add_argument("--max-rent", type=float, default=18.0, help="家賃上限(万円)")
     ap.add_argument("--walk", type=int, default=10, help="徒歩上限(分)")
     ap.add_argument("--max-age", type=int, default=35, help="築年数上限")
     ap.add_argument("--max-pages", type=int, default=80)
     ap.add_argument("--min-photos", type=int, default=3, help="間取り図・周辺写真を除く写真の最低枚数 (0 で無効)")
+    web.add_proxy_argument(ap)
     args = ap.parse_args()
+    try:
+        web.configure_proxy(args.proxy)
+    except ValueError as e:
+        ap.error(str(e))
 
-    s = requests.Session()
+    s = web.new_session()
     if args.lines:
         rows, total = search_lines(s, args.lines, args.prefs, args.layout, args.max_rent, args.walk,
                                    args.max_age, args.delay, args.max_pages, log=lambda m: print(m, file=sys.stderr), min_photos=args.min_photos)

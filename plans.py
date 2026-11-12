@@ -11,7 +11,7 @@ import os
 import time
 
 import numpy as np
-import requests
+import web
 from PIL import Image
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -55,7 +55,7 @@ def looks_like_photo(webp_bytes):
 def build_plans(candidates, cache_dir, delay=0.8, log=print, plan_urls=None):
     """candidates: candidates.json の行。戻り値: [{'id', 'img'(data URI)}] (間取り図が無い物件は含めない)"""
     os.makedirs(cache_dir, exist_ok=True)
-    ses, out, fetched, missing, photos = requests.Session(), [], 0, [], []
+    ses, out, fetched, missing, photos = web.new_session(), [], 0, [], []
     for r in candidates:
         path = os.path.join(cache_dir, r["id"] + ".webp")
         if not os.path.exists(path):

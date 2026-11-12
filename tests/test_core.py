@@ -224,3 +224,77 @@ class TestCollectDegrades(unittest.TestCase):
             ss.sites.fetch, ss.TARGETS = orig_fetch, orig_targets
         self.assertEqual(failed, ["HOME'S"])
         self.assertTrue(rows and all(r["site"] == "CHINTAI" for r in rows))
+
+
+class TestMultipleLayouts(unittest.TestCase):
+    def test_filter_rows_accepts_several_layouts_exactly(self):
+        import search_sites as ss
+        base = {"site": "CHINTAI", "address": "東京都目黒区A", "access": ["東急目黒線/「目黒」駅 徒歩5分"], "rent_yen": 180000,
+                "age": 10, "area_m2": 40.0}
+        rows = [{**base, "layout": x, "url": f"u{x}"} for x in ("1LDK", "2DK", "2LDK", "2SLDK", "1K")]
+        got = ss.filter_rows(rows, ["meguro"], ["1LDK", "2DK", "2LDK"], 19, 10, 35, 28)
+        self.assertEqual(sorted(r["layout"] for r in got), ["1LDK", "2DK", "2LDK"])
+        self.assertEqual(len(ss.filter_rows(rows, ["meguro"], "1LDK", 19, 10, 35, 28)), 1)
+
+    def test_collect_requests_each_layout_and_skips_unsupported_for_homes(self):
+        import search_sites as ss
+        urls, notes = [], []
+        orig = ss.sites.fetch
+        try:
+            def fake_fetch(ses, url, params=None):
+                urls.append((url, params))
+                return url
+            ss.sites.fetch = fake_fetch
+            orig_targets = ss.TARGETS
+            ss.TARGETS = {k: (v[0], v[1], (lambda u: [{"url": u, "site": "x"}] if "page" not in u else [])) for k, v in orig_targets.items()}
+            ss.collect(["meguro"], 19, 10, max_pages=2, delay=0, log=notes.append, layouts=("1LDK", "2DK", "2LDK"))
+        finally:
+            ss.sites.fetch, ss.TARGETS = orig, orig_targets
+        flat = [u for u, _ in urls]
+        for slug in ("madori_1ldk", "madori_2dk", "madori_2ldk"):
+            self.assertTrue(any(f"/theme/{slug}/" in u for u in flat), slug)
+        for slug in ("1ldk", "2dk", "2ldk"):
+            self.assertTrue(any(u.endswith(f"/list/{slug}/") for u in flat), slug)
+        homes = [p for u, p in urls if "homes.co.jp" in u]
+        self.assertTrue(homes and all("cond[madori][15]" in p for p in homes))  # only 1LDK is requested from HOME'S
+        self.assertTrue(any("HOME'S" in n and "2DK" in n for n in notes))
+
+    def test_suumo_requests_all_layout_codes(self):
+        from bs4 import BeautifulSoup
+        seen = []
+        orig = (sc.fetch, sc.line_stations, sc.total_hits)
+        try:
+            sc.line_stations = lambda *a: ("ra", "rn", ["1"])
+            sc.total_hits = lambda soup: "0件"
+            sc.fetch = lambda ses, url, *a, **k: (seen.append(url), BeautifulSoup("", "html.parser"))[1]
+            try:
+                sc.search_lines(None, ["meguro"], ["tokyo"], ["1LDK", "2DK", "2LDK"], 19, 10, 35, 0, 1, log=lambda m: None)
+            except RuntimeError:
+                pass  # coverage guard on the empty fake result is irrelevant here
+        finally:
+            sc.fetch, sc.line_stations, sc.total_hits = orig
+        self.assertTrue(seen and "&md=04&md=06&md=07&" in seen[0], seen[:1])
+
+    def test_validate_rejects_other_layout(self):
+        base = {"id": "a", "url": "https://x/a", "area": 40.0, "rent": 15.0, "admin": 1.0, "total": 16.0, "walk": 5, "age": 10,
+                "structure": "鉄筋コン", "group": "RC", "photos": 5, "layout": "3LDK", "line": "目黒", "initial": 50.0, "initial_note": "", "floor": "3階", "note": "", "shiki": "15", "rei": "15", "building": "b", "station": "s"}
+        errs, _ = validate.validate([base], [], [], max_rent=19, walk=10, max_age=35, min_area=28, min_photos=3, layouts=["1LDK", "2DK", "2LDK"])
+        self.assertTrue(any("間取りが条件外" in e for e in errs))
+
+
+class TestNotFound(unittest.TestCase):
+    def test_404_is_not_retried_and_reaches_the_caller(self):
+        import requests
+
+        class Resp404(FakeResp):
+            def __init__(self):
+                super().__init__(404, b"")
+                self.response = self
+
+            def raise_for_status(self):
+                raise requests.HTTPError("404", response=self)
+
+        ses = FakeSession([Resp404()])
+        with self.assertRaises(requests.HTTPError):
+            web.fetch_soup(ses, "https://example.invalid/x", retries=5, sleep=lambda _: None, pacer=NOWAIT())
+        self.assertEqual(ses.calls, 1)

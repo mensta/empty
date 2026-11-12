@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """検索から候補JSONまでを1コマンドで行う。
 
-    python run.py                                   # 既定: 東急東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 28㎡より広い
+    python run.py                                   # 既定: 東急東横線・目黒線 / 東京都側 / 1LDK・2DK・2LDK / 19万円以下 / 徒歩10分 / 築35年 / 28㎡より広い
     python run.py --prefs tokyo kanagawa --walk 10  # 条件を変える
     python run.py --from-csv result.csv             # 検索済みの CSV から候補だけ作り直す (検索を省く)
 
@@ -22,7 +22,7 @@ import re
 import sys
 import time
 
-import requests
+import web
 
 import candidates as cand
 import others
@@ -49,10 +49,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="SUUMO の沿線検索 -> 候補JSON")
     ap.add_argument("--lines", nargs="+", default=["toyoko", "meguro"], choices=list(sc.LINES))
     ap.add_argument("--prefs", nargs="+", default=["tokyo"], choices=list(sc.PREFS))
-    ap.add_argument("--layout", default="1LDK", choices=list(sc.LAYOUT_CODES))
-    ap.add_argument("--max-rent", type=float, default=18.0, help="家賃の上限(万円)")
-    ap.add_argument("--walk", type=int, default=7, help="駅徒歩の上限(分)")
-    ap.add_argument("--max-age", type=int, default=20, help="築年数の上限")
+    ap.add_argument("--layout", nargs="+", default=["1LDK", "2DK", "2LDK"], choices=list(sc.LAYOUT_CODES), help="room layouts to include (any of them)")
+    ap.add_argument("--max-rent", type=float, default=19.0, help="家賃の上限(万円)")
+    ap.add_argument("--walk", type=int, default=10, help="駅徒歩の上限(分)")
+    ap.add_argument("--max-age", type=int, default=35, help="築年数の上限")
     ap.add_argument("--min-area", type=float, default=28.0, help="専有面積がこの値(㎡)より広い部屋だけ")
     ap.add_argument("--min-photos", type=int, default=3, help="間取り図・周辺写真を除く写真の最低枚数 (0 で無効)")
     ap.add_argument("--max-pages", type=int, default=130)
@@ -63,7 +63,14 @@ def main() -> int:
     ap.add_argument("--reuse-others", action="store_true", help="他サイトは検索せず、<out-dir>/others_raw.json を使う")
     ap.add_argument("--out-dir", default=cand.DATA)
     ap.add_argument("--cache", help="詳細ページのキャッシュ (既定: <out-dir>/detail_cache.json)")
+    web.add_proxy_argument(ap)
     a = ap.parse_args()
+    try:
+        proxy = web.configure_proxy(a.proxy)
+    except ValueError as e:
+        ap.error(str(e))
+    if proxy:
+        log(f"proxy: {proxy}")
     t0 = time.time()
     out_dir = a.out_dir
     cache = a.cache or os.path.join(out_dir, "detail_cache.json")
@@ -74,7 +81,7 @@ def main() -> int:
         log(f"[1/5] 検索を省略: {a.from_csv} から {len(rows)} 件")
     else:
         log("[1/5] SUUMO を検索")
-        rows, total = sc.search_lines(requests.Session(), a.lines, a.prefs, a.layout, a.max_rent, a.walk, a.max_age,
+        rows, total = sc.search_lines(web.new_session(), a.lines, a.prefs, a.layout, a.max_rent, a.walk, a.max_age,
                                       a.delay, a.max_pages, log=log, min_photos=a.min_photos)
         log(f"      掲載 {total} 件を取得 -> 条件に合う部屋 {len(rows)} 室")
         if a.raw and rows:
@@ -105,7 +112,7 @@ def main() -> int:
             raw = cand.load_json(raw_path, [])
             log(f"      検索を省略: {raw_path} から {len(raw)} 件")
         else:
-            raw, _failed = ss.collect(a.lines, a.max_rent, a.walk, a.max_pages, a.delay, log=log)
+            raw, _failed = ss.collect(a.lines, a.max_rent, a.walk, a.max_pages, a.delay, log=log, layouts=a.layout)
             cand.save_json(raw_path, raw)
         found = ss.filter_rows(raw, a.lines, a.layout, a.max_rent, a.walk, a.max_age, a.min_area)
         log(f"      条件に合う部屋: {len(found)} 件")
@@ -130,7 +137,7 @@ def main() -> int:
     log("[5/5] 検証と書き出し")
     conds = cand.make_conditions(a.layout, a.max_rent, a.lines, a.prefs, a.walk, a.max_age, a.min_area, a.min_photos, site_names)
     errors, warns = validate.validate(out, plan_rows, conds, max_rent=a.max_rent, walk=a.walk, max_age=a.max_age,
-                                      min_area=a.min_area, min_photos=a.min_photos)
+                                      min_area=a.min_area, min_photos=a.min_photos, layouts=a.layout)
     for w in warns:
         log(f"  警告: {w}")
     if errors:

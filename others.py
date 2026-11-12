@@ -10,7 +10,7 @@ import re
 import time
 import unicodedata
 
-import requests
+import web
 
 import candidates as cand
 import sites
@@ -41,7 +41,7 @@ def build_other_rows(rows, suumo_keys, cache_path, min_photos=3, delay=1.5, log=
     log(f"他サイトの部屋 {len(groups)} 室のうち、SUUMO の候補にない部屋: {len(new_keys)} 室")
 
     cache = cand.load_json(cache_path, {})
-    ses, out, plan_urls = requests.Session(), [], {}
+    ses, out, plan_urls = web.new_session(), [], {}
     skipped = {"木造": 0, "写真が少ない": 0, "取得失敗": 0}
     for k in new_keys:
         r = min(groups[k], key=lambda x: ORDER.index(x["site"]))
@@ -69,7 +69,7 @@ def build_other_rows(rows, suumo_keys, cache_path, min_photos=3, delay=1.5, log=
             id=rid, site=r["site"], also="・".join(s for s in present[k] if s != r["site"]), url=r["url"],
             building=r["building"], line=line, station=st, walk=r["walk_min"], rent_yen=r["rent_yen"],
             admin_yen=r["admin_yen"] or 0, total_yen=r["rent_yen"] + (r["admin_yen"] or 0), area=r["area_m2"],
-            age=r["age"], photos=e["n_photos"], d=e)
+            age=r["age"], photos=e["n_photos"], d=e, layout=r["layout"])
         out.append(row)
         if e.get("plan_url"):
             plan_urls[rid] = e["plan_url"]

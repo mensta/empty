@@ -7,7 +7,7 @@
 import re
 
 
-def validate(cands, plans, conds, *, max_rent, walk, max_age, min_area, min_photos):
+def validate(cands, plans, conds, *, max_rent, walk, max_age, min_area, min_photos, layouts=None):
     errors, warnings = [], []
     if not cands:
         return ["候補が0件"], warnings
@@ -23,6 +23,8 @@ def validate(cands, plans, conds, *, max_rent, walk, max_age, min_area, min_phot
         urls[r["url"]] = r
         if not str(r["url"]).startswith("https://"):
             errors.append(f"URLが不正: {name}")
+        if layouts and r.get("layout") not in layouts:
+            errors.append(f"間取りが条件外 ({r.get('layout')}): {name}")
         if not (r["area"] > min_area):
             errors.append(f"広さが条件外 ({r['area']}㎡): {name}")
         if r["rent"] > max_rent + 1e-9:

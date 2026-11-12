@@ -16,7 +16,7 @@ import sys
 import time
 import unicodedata
 
-import requests
+import web
 
 import suumo_scraper as m
 
@@ -163,7 +163,7 @@ def is_wood(d):
     return "木造" in _n(d.get("structure", "")) or "構造は木造" in d.get("biko", "") or norm_structure(d.get("structure", "")) == "木造"
 
 
-def make_row(*, id, site, also, url, building, line, station, walk, rent_yen, admin_yen, total_yen, area, age, photos, d):
+def make_row(*, id, site, also, url, building, line, station, walk, rent_yen, admin_yen, total_yen, area, age, photos, d, layout=""):
     """SUUMO でも他サイトでも、候補1行を同じ形に組み立てる。d は詳細ページから読んだ内容 (構造・敷礼・保証・契約など)"""
     structure = norm_structure(d["structure"])
     name = unicodedata.normalize("NFKC", re.sub(r"\s*\d+号室$", "", building))
@@ -179,7 +179,7 @@ def make_row(*, id, site, also, url, building, line, station, walk, rent_yen, ad
         "id": id, "site": site, "also": also,
         "group": "RC" if structure == "鉄筋コン" else "鉄骨・ALC",
         "line": line.replace("線", ""), "station": station, "walk": int(walk),
-        "building": name, "rent": man(rent_yen), "admin": man(admin_yen or 0), "total": man(total_yen),
+        "layout": layout, "building": name, "rent": man(rent_yen), "admin": man(admin_yen or 0), "total": man(total_yen),
         "area": area, "age": int(age), "structure": structure, "floor": d["floor"],
         "photos": int(photos), "shiki": sk, "rei": rei, "move_in": d["move_in"],
         "initial": initial, "initial_note": initial_note,
@@ -198,7 +198,7 @@ def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max
     cache = load_json(cache_path, {})
     todo = [r for r in pool if cache.get(r["url"], {}).get("v") != CACHE_VERSION or not cache[r["url"]].get("structure")]
     log(f"候補プール {len(pool)} 室 (詳細ページを新規取得: {len(todo)} 件)")
-    ses, failed = requests.Session(), 0
+    ses, failed = web.new_session(), 0
     for i, r in enumerate(todo, 1):
         try:
             cache[r["url"]] = detail_fields(m.fetch(ses, r["url"]))
@@ -220,7 +220,7 @@ def build_candidates(rows, cache_path, prefix="", max_age=20, min_area=28.0, max
         out.append(make_row(
             id=r["url"].rstrip("/").split("/")[-1], site="SUUMO", also="", url=r["url"], building=r["building"],
             line=line, station=st, walk=r["walk_min"], rent_yen=r["rent_yen"], admin_yen=r["admin_yen"] or 0,
-            total_yen=r["total_yen"], area=r["_area"], age=r["age"], photos=r["n_photos"], d=d))
+            total_yen=r["total_yen"], area=r["_area"], age=r["age"], photos=r["n_photos"], d=d, layout=r.get("layout", "")))
     return out
 
 
@@ -230,7 +230,7 @@ def make_conditions(layout, max_rent, lines, prefs, walk, max_age, min_area, min
     pref_names = "・".join(m.PREFS[p] for p in prefs)
     return [
         {"key": "sites", "label": "掲載サイト", "text": sites},
-        {"key": "layout", "label": "間取り", "text": layout},
+        {"key": "layout", "label": "間取り", "text": layout if isinstance(layout, str) else "・".join(layout)},
         {"key": "rent_max", "label": "家賃", "text": f"{max_rent:g}万円以下", "value": max_rent},
         {"key": "line", "label": "沿線", "text": f"{line_names}({pref_names})"},
         {"key": "walk", "label": "駅徒歩", "text": f"{walk}分以内"},
@@ -251,7 +251,12 @@ def main():
     ap.add_argument("--delay", type=float, default=1.5)
     ap.add_argument("--cache", default=os.path.join(DATA, "detail_cache.json"))
     ap.add_argument("--out", default=os.path.join(DATA, "candidates.json"))
+    web.add_proxy_argument(ap)
     a = ap.parse_args()
+    try:
+        web.configure_proxy(a.proxy)
+    except ValueError as e:
+        ap.error(str(e))
     rows = list(csv.DictReader(open(a.result_csv, encoding="utf-8-sig")))
     out = build_candidates(rows, a.cache, a.prefix, a.max_age, a.min_area, a.max_walk, a.delay, log=lambda s: print(s, file=sys.stderr))
     save_json(a.out, out)
