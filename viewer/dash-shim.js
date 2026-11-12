@@ -44,6 +44,11 @@
     const failed = [];
     for (const [name, file] of Object.entries(FILES)) {
       try {
+        if (window.RENTAL_DATA && name in window.RENTAL_DATA) {  // standalone build (scripts/publish_s3.py)
+          store[name] = window.RENTAL_DATA[name];
+          status[name] = "ok";
+          continue;
+        }
         const r = await fetch(DATA_DIR + file, { cache: "no-store" });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         store[name] = await r.json();

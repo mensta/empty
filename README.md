@@ -33,7 +33,7 @@ python search_sites.py --sites "HOME'S" --out h.csv
 python run.py        # 東横線・目黒線 / 東京都側 / 1LDK・2DK・2LDK / 19万円以下 / 徒歩10分 / 築35年 / 28㎡より広い / 木造除外 -> data/candidates.json
 ```
 
-詳細は `run.py --help` と `ARTIFACT.md` (アーティファクトへの反映手順)。
+詳細は `run.py --help` と `AGENTS.md`。公開は `python scripts/publish_s3.py` (S3)。
 
 ## 他サイトの増分取得
 

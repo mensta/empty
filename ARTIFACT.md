@@ -1,3 +1,5 @@
+> **旧手順 (使わない)**: 公開は S3 に切り替えた。`python scripts/publish_s3.py` を使う (AGENTS.md 参照)。以下は参考用に残している。
+
 # 物件候補アーティファクトの更新手順
 
 (作業の前提は `AGENTS.md`、落とし穴は `LESSONS.md`)

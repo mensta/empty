@@ -29,15 +29,20 @@ TAIL = "\n</body>\n</html>\n"
 SHIM = '<script src="dash-shim.js"></script>\n<script>'
 
 
-def build(src=SRC, dst=DST) -> None:
+def render(src=SRC) -> str:
+    """Full HTML of the local viewer (references tokens.css and dash-shim.js)."""
     body = open(src, encoding="utf-8").read()
     body = body.replace('<meta name="dash-one-writer">\n', "", 1)
     if body.count("\n<script>\n") != 1:
         raise SystemExit("ページのインラインの <script> が1つではありません。build_viewer.py を直してください。")
     body = body.replace("\n<script>\n", "\n" + SHIM + "\n", 1)
+    return HEAD + body + TAIL
+
+
+def build(src=SRC, dst=DST) -> None:
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     with open(dst, "w", encoding="utf-8") as f:
-        f.write(HEAD + body + TAIL)
+        f.write(render(src))
 
 
 if __name__ == "__main__":

@@ -1,13 +1,16 @@
 # このリポジトリで作業するときの前提
 
-東横線・目黒線の賃貸 (既定: 1LDK・2DK・2LDK。`--layout` で変更) を SUUMO / HOME'S / at home / CHINTAI から集め、条件で絞った候補を、ローカルのビューアで見る。アーティファクト (Claude) にも同じ候補を反映できる。
+東横線・目黒線の賃貸 (既定: 1LDK・2DK・2LDK。`--layout` で変更) を SUUMO / HOME'S / at home / CHINTAI から集め、条件で絞った候補を、ローカルのビューアで見る。公開は S3 (CloudFront 経由) に行う。Claude のアーティファクトは今後更新しない。
 
 ## よく使うコマンド
 - 候補を作る: `python run.py` (約13分。条件は `--help`。`--from-csv raw.csv` で検索を省略)
 - 他サイトだけ増分で取る: `python run.py --incremental-others` (新着順 + 既知ページで打ち切り。7日ごと/初回は全件。`--full-others` で全件を強制。状態は `data/known_ids.json`)
 - テスト: `python -m unittest discover -s tests -v`
 - 画面をローカルで見る: `python scripts/build_viewer.py` のあと、リポジトリ直下で `python -m http.server 8000`、ブラウザで http://localhost:8000/viewer/ (ページ `artifact/index.html` を直したら build を再実行)
-- アーティファクトへ反映: `python scripts/sync_artifact.py` (データが変わっていなければ何もしない。`--dry-run` で判定と指示だけ表示。`--force` で変わっていなくても反映)
+- 公開 (S3): `python scripts/publish_s3.py` (`dist/site/` を作り、`s3://live-my-life/artifacts/rental-candidates/` に上げる。`--dry-run` は作るだけで aws コマンドを表示。`--url <公開URL>` でアップロード後に表示を確認。`--no-plans` で間取り図なし)
+  - 構成: `index.html` (候補と条件を `window.RENTAL_DATA` に埋め込んだ単体ページ) と `plans/<id>.webp` (相対パス)。間取り図を先に上げ、最後に `index.html` を上げる。S3 の既存ファイルは消さない。バケットポリシーと CloudFront の設定は触らない。
+  - 認証は `--profile` (既定: `$AWS_PROFILE`、なければ `mensta`)。`index.html` は `no-cache` なので、CloudFront が古いコピーを返すときは、まず `--url` で状態を見る。
+  - 旧: `scripts/sync_artifact.py` (Claude のアーティファクト反映)。使わない。
   - 内部で `claude -p --model claude-haiku-5-5` を二回呼ぶ。`claude` がログイン済みで、Artifact / ArtifactData が使えることが前提。
   - 状態は `data/artifact_state.json` (blob の id、version、データのハッシュ)。手で書き換えない。
 - 反映用ドキュメントだけ作る: `python artifact_docs.py --candidates <blob id> --plans <blob id> --conditions <blob id>`
@@ -21,16 +24,15 @@
 - 新しい取得処理・パーサーは `web.fetch_soup` を通し、不具合を直したら `tests/` にその再現ケースを足す。`LESSONS.md` にも追記する。
 - `run.py` の検証 (`validate.py`) で止まったら、出力を上書きしていない。原因を直してから再実行する (検証を緩めない)。
 - 数字は自動計算が正しいことが多い。手計算と食い違ったら、まず入力 (掲載の記載) を疑って確かめる。
-- 画面の確認: ローカルのビューアは、ヘッドレス Chromium で描画を確かめられる。アーティファクト側の描画は確認できない。確認していないことを確認したと言わない。
-- 間取り図や写真は掲載元の著作物。リポジトリは private に保ち、アーティファクトは共有しない (共有するときは先にユーザーに聞く)。
-- ページ本体 (`artifact/index.html`) は、ローカルとアーティファクトの両方で使う。`dash` を新しく呼ぶときは `viewer/dash-shim.js` にも同じ API を足す。
+- 画面の確認: ローカルのビューアは、ヘッドレス Chromium で描画を確かめられる。公開先 (S3 / CloudFront) の描画も、HTTP の応答までしか確認できない。確認していないことを確認したと言わない。
+- 間取り図や写真は掲載元の著作物。リポジトリは private に保つ。公開 (S3) に間取り図を含めることは、ユーザーが承認済み (`--no-plans` で外せる)。公開先を増やす・変えるときは先にユーザーに聞く。
+- ページ本体 (`artifact/index.html`) は、ローカルのビューアと公開ページ (S3) の両方で使う。`dash` を新しく呼ぶときは `viewer/dash-shim.js` にも同じ API を足す。
 
 ## 構成
 `run.py` (入口) → `suumo_scraper.py` (SUUMO 検索) → `candidates.py` (構造・初期費用) → `others.py` / `search_sites.py` / `sites.py` / `known_ids.py` (他サイト・増分) → `plans.py` (間取り図) → `validate.py` → `data/*.json`
 
 - 画面: `artifact/index.html` (正本) → `scripts/build_viewer.py` → `viewer/index.html` (+ `viewer/dash-shim.js`, `viewer/tokens.css`)
-- アーティファクト反映: `scripts/sync_artifact.py` → `artifact_docs.py` → (Claude に `scripts/sync_upload_prompt.md` / `scripts/sync_apply_prompt.md` の指示を渡す)
+- 公開: `scripts/publish_s3.py` (`build_viewer.render` + `viewer/dash-shim.js` + `data/*.json` → `dist/site/` → `aws s3`)
 
 ## 注意 (Claude の道具について)
-- `Artifact` / `ArtifactData` は Claude の道具。opencode などからは直接使えない。反映は必ず `scripts/sync_artifact.py` 経由で行う。
-- 手で反映する場合の手順は `ARTIFACT.md` を参照 (参考用)。
+- 旧アーティファクトの手順は `ARTIFACT.md` に残してあるが、参考用 (使わない)。
