@@ -1,0 +1,4 @@
+{"stage":"S1","version":"156.0.8078.4","ua":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"}
+{"page":1,"how":"goto","status":200,"ok":false,"secs":15.3,"title":"認証にご協力ください。","url":"https://www.athome.co.jp/chintai/theme/madori_1ldk/tokyo/tokyutoyoko-line/list/?sort=33","cards":0,"rooms":0,"sort":null,"total":null,"challenge":true,"err":null}
+STOP: blocked or empty at at home page 1 (no retry, no bypass)
+{"summary":{"loads":1,"ok":0,"rooms":0}}

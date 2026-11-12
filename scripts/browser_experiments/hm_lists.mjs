@@ -1,5 +1,5 @@
 // Pass 1: walk the list pages of each line by clicking "next". Page 1 of a line is opened by URL; the rest only by clicks.
-import { open, fs, sleep, GAP, CHALLENGE, listUrl, listInfo } from './hm_common.mjs';
+import { open, fs, sleep, GAP, STAGE, CHALLENGE, listUrl, listInfo } from './hm_common.mjs';
 const LINES = (process.env.LINES || 'toyoko,meguro').split(',');
 const { browser, ctx, newPage } = await open();
 const page = await newPage();
@@ -32,5 +32,5 @@ for (const line of LINES) {
 }
 const okN = log.filter(x => x.ok);
 console.log(JSON.stringify({ summary: { gap: GAP, loads: log.length, ok: okN.length, failed: log.length - okN.length, buildings: okN.reduce((a, x) => a + x.buildings, 0) } }));
-fs.writeFileSync('run_lists.json', JSON.stringify(log, null, 1));
+fs.writeFileSync(`run_lists_${STAGE}.json`, JSON.stringify(log, null, 1));
 await browser.close();

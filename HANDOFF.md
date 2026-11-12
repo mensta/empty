@@ -56,4 +56,4 @@ python -m http.server 8000                    # http://localhost:8000/viewer/
 
 ## ヘッドレスブラウザの実験 (2026-11-12、進行中)
 
-HOME'S / at home を、ヘッドレスブラウザの「リンクをクリックして進む」方式で取れるかの実験。結果・決定事項・次の実験・組み込み案は `scripts/browser_experiments/NOTES.md`。要点: User-Agent と Client Hints を Chrome に揃えると通る場面があり、HOME'S は「クリックで進む」と東横線7ページが通った (URL直接は405)。at home は2ページ目で弾かれた。stealth の効き目の検証 (S0〜S3) が次。ユーザーの方針: 安定するなら HOME'S はこの方式で取る。
+HOME'S / at home を、ヘッドレスブラウザの「リンクをクリックして進む」方式で取れるかの実験。結果・決定事項・次の実験・組み込み案は `scripts/browser_experiments/NOTES.md`。要点: User-Agent と Client Hints を Chrome に揃えると通る場面があり、HOME'S は「クリックで進む」と東横線7ページが通った (URL直接は405)。at home は2ページ目で弾かれた。stealth の効き目の検証 (S0〜S3) は実施済みで、効いたとは言えない。HOME'S は、路線ごとに新しいブラウザ + クリック巡回で、一覧も詳細 (79室) も取れた。候補に加わるのは8室のみ (木造が多い)。反映と `run.py` への組み込みは未了。詳細は `scripts/browser_experiments/NOTES.md` の9.ユーザーの方針: 安定するなら HOME'S はこの方式で取る。

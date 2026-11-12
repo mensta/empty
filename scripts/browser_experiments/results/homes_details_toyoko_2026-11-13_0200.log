@@ -1,0 +1,5 @@
+{"stage":"S0","version":"156.0.8078.4","ua":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36"}
+{"list":"toyoko","page":1,"buildings":30,"remaining":38}
+{"detail":"8e57833cc50612f0b383f6373f9ba61e7fe31e48","line":"toyoko","listPage":1,"ok":false,"secs":45,"title":null,"size":0,"err":"TimeoutError: page.waitForNavigation: Timeout 45000ms exceeded.\n=========================== logs ==="}
+STOP: detail blocked/failed (8e57833cc50612f0b383f6373f9ba61e7fe31e48) (no retry, no bypass)
+{"summary":{"gap":6,"detailsOpened":1,"ok":0,"failed":1}}

@@ -1,5 +1,5 @@
 // at home list pages in a headless browser (UA + Client Hints say Chrome). Page 1 by URL, the rest by CLICKING the page-number link.
-import { open, fs, sleep, GAP } from './hm_common.mjs';
+import { open, fs, sleep, GAP, STAGE } from './hm_common.mjs';
 const MAXP = Number(process.env.MAXP || 6);
 const base = 'https://www.athome.co.jp/chintai/theme/madori_1ldk/tokyo/tokyutoyoko-line/list/';
 const { browser, newPage } = await open();
@@ -31,5 +31,5 @@ for (let n = 1; n <= MAXP; n++) {
   if (!ok) { console.log(`STOP: blocked or empty at at home page ${n} (no retry, no bypass)`); break; }
 }
 console.log(JSON.stringify({ summary: { loads: log.length, ok: log.filter(x => x.ok).length, rooms: log.filter(x => x.ok).reduce((a, x) => a + x.rooms, 0) } }));
-fs.writeFileSync('run_athome.json', JSON.stringify(log, null, 1));
+fs.writeFileSync(`run_athome_${STAGE}.json`, JSON.stringify(log, null, 1));
 await browser.close();
