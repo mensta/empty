@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>東横線・目黒線の1LDK候補 (ローカル)</title>
+<title>東横線・目黒線の賃貸候補 (ローカル)</title>
 <link rel="stylesheet" href="tokens.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
@@ -73,7 +73,7 @@
 
 <div class="lx" id="top">
   <header>
-    <h1 class="lx-title">東横線・目黒線の1LDK候補</h1>
+    <h1 class="lx-title">東横線・目黒線の賃貸候補</h1>
     <p class="lx-lede">候補は <b data-draw="sum" data-source="summary" data-field="total">—</b> 室で、鉄筋コンが <b data-draw="sum" data-source="summary" data-field="rc">—</b> 室、鉄骨・ALCが <b data-draw="sum" data-source="summary" data-field="other">—</b> 室です。鉄筋コンの総額(管理費込み)は最安 <b data-draw="sum" data-source="summary" data-field="rc_min" data-fmt="man">—</b> 万円、中央値 <b data-draw="sum" data-source="summary" data-field="rc_median" data-fmt="man">—</b> 万円です。</p>
     <ul class="lx-chips" data-draw="conditions" data-source="conditions" aria-label="絞り込み条件"></ul>
   </header>
@@ -89,6 +89,12 @@
         <option value="">すべての構造</option>
         <option value="RC">鉄筋コン(RC)</option>
         <option value="鉄骨・ALC">鉄骨・ALC</option>
+      </select>
+      <select class="dash-select" id="lx-layout" data-lx="layout" aria-label="間取り">
+        <option value="">すべての間取り</option>
+        <option value="1LDK">1LDK</option>
+        <option value="2DK">2DK</option>
+        <option value="2LDK">2LDK</option>
       </select>
       <select class="dash-select" id="lx-line" data-lx="line" aria-label="路線">
         <option value="">両方の路線</option>
@@ -107,6 +113,7 @@
           <tr>
             <th data-field="station" data-sort-col="station" aria-sort="none"><button type="button">駅・徒歩</button></th>
             <th data-field="building" data-sort-col="building" aria-sort="none"><button type="button">物件</button></th>
+            <th data-field="layout" data-sort-col="layout" aria-sort="none"><button type="button">間取り</button></th>
             <th data-field="total" data-sort-col="total" aria-sort="none"><button type="button">総額(万円)</button></th>
             <th data-field="initial" data-sort-col="initial" aria-sort="none"><button type="button">初期費用(万円)</button></th>
             <th data-field="area" data-sort-col="area" aria-sort="none"><button type="button">広さ(㎡)</button></th>
@@ -139,7 +146,7 @@
 
 <script src="dash-shim.js"></script>
 <script>
-  const S = { group: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1, plan: null };
+  const S = { group: '', layout: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1, plan: null };
   const fmt0 = d3.format('.0f');
   const fmt1 = d3.format('.1f');
   const num = d3.format(',');
@@ -163,10 +170,11 @@
 
   const pass = (r) => {
     if (S.group && r.group !== S.group) return false;
+    if (S.layout && r.layout !== S.layout) return false;
     if (S.line && r.line !== S.line) return false;
     if (S.station && r.station !== S.station) return false;
     if (S.within) { const l = limit(); if (l != null && r.total > l) return false; }
-    if (S.q && ![r.building, r.station, r.line, r.note, r.structure].join(' ').toLowerCase().includes(S.q)) return false;
+    if (S.q && ![r.building, r.station, r.line, r.note, r.structure, r.layout].join(' ').toLowerCase().includes(S.q)) return false;
     return true;
   };
   const comparator = () => {
@@ -203,7 +211,7 @@
   });
   document.querySelectorAll('#lx-reset').forEach((b) => {
     b.addEventListener('click', () => {
-      Object.assign(S, { group: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1 });
+      Object.assign(S, { group: '', layout: '', line: '', station: '', q: '', within: false, sort: 'default', dir: 1 });
       document.querySelectorAll('[data-lx]').forEach((c) => { if (c.type === 'checkbox') c.checked = false; else c.value = ''; });
       document.querySelectorAll('#lx-station').forEach((c) => { c.value = ''; });
       redraw();
@@ -288,7 +296,7 @@
     popClose();
     const list = rows().filter(pass).sort(comparator());
     if (!list.length) {
-      const tr = document.createElement('tr'); const td = el('td', 'lx-empty', rows().length ? '条件に合う物件がありません。' : '候補を読み込み中です。'); td.colSpan = 11; tr.append(td);
+      const tr = document.createElement('tr'); const td = el('td', 'lx-empty', rows().length ? '条件に合う物件がありません。' : '候補を読み込み中です。'); td.colSpan = 12; tr.append(td);
       tb.replaceChildren(tr); return;
     }
     tb.replaceChildren(...list.map((r) => {
@@ -316,6 +324,7 @@
       tr.append(
         cell(el('b', '', r.station), el('span', 'lx-sub', `${r.line}線 徒歩${r.walk}分`)),
         nameCell,
+        cell(r.layout || '—'),
         totalCell,
         r.initial == null ? cell('—') : cell(el('b', '', fmt0(r.initial)), r.initial_note ? el('span', 'lx-sub', r.initial_note) : ''),
         cell(fmt1(r.area)),
@@ -366,7 +375,7 @@
 
     const tip = document.createElement('div'); tip.className = 'lx-tip'; tip.hidden = true; box.append(tip);
     const show = (event, r) => {
-      tip.replaceChildren(el('b', '', r.building), el('span', '', `${r.station}(${r.line}線) 徒歩${r.walk}分`), el('span', '', `総額${fmt1(r.total)}万円 / ${fmt1(r.area)}㎡ / ${r.age === 0 ? '新築' : `築${r.age}年`} / ${r.structure}`));
+      tip.replaceChildren(el('b', '', r.building), el('span', '', `${r.station}(${r.line}線) 徒歩${r.walk}分`), el('span', '', `${r.layout ? `${r.layout} / ` : ''}総額${fmt1(r.total)}万円 / ${fmt1(r.area)}㎡ / ${r.age === 0 ? '新築' : `築${r.age}年`} / ${r.structure}`));
       tip.hidden = false;
       const [px, py] = d3.pointer(event, box);
       tip.style.left = `${Math.max(0, Math.min(px + 12, box.clientWidth - tip.offsetWidth))}px`;
