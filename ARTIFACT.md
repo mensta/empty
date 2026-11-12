@@ -1,46 +1,38 @@
 # 物件候補アーティファクトの更新手順
 
-(取得まわりの落とし穴は `LESSONS.md`、作業の前提は `CLAUDE.md`)
+(作業の前提は `AGENTS.md`、落とし穴は `LESSONS.md`)
 
-- アーティファクト: https://claude.ai/artifact/FGVqc2su3LU2XfoQKZMjHX （Dashboard タイプ。ページ本体とデータは別）
-- ページ (`files/index.html`) は **データを読んで描くだけ**。候補の入れ替えでは触らない。
-- データは3つの JSON ファイル (行オブジェクトの配列)。それぞれ `datasets/<名前>` が参照する:
+- アーティファクト: https://claude.ai/artifact/FGVqc2su3LU2XfoQKZMjHX
+- **画面の正本はローカルのビューア** (`viewer/`)。アーティファクトは同じ候補を見せる写し。
+- ページ本体 (`artifact/index.html`) はデータを読んで描くだけ。候補の入れ替えではページを触らない。
+- データは3つの JSON (行オブジェクトの配列): `data/candidates.json` / `data/plans.json` (間取り図。git 管理外) / `data/conditions.json`。`python run.py` が作り、検証 (`validate.py`) に通ったものだけ書き出す。
 
-  | 名前 | ファイル | 中身 |
-  |---|---|---|
-  | `candidates` | `data/candidates.json` | 候補の部屋 (1行 = 1部屋) |
-  | `plans` | `data/plans.json` | 間取り図 (縮小 WebP の data: URI、物件IDで candidates と対応。約1MB。git 管理外) |
-  | `conditions` | `data/conditions.json` | 画面上部の検索条件。`rent_max` の `value` は総額の橙色表示と「総額○万円以内」の基準にも使う |
+## 反映 (通常)
 
-  すべて `python run.py` が作る (書き出す前に `validate.py` が検証し、エラーなら上書きしない)。`data/detail_cache.json` は詳細ページのキャッシュ、`data/plans/` は間取り図のキャッシュ。
-- ページは外部サイトの画像を読み込めない (CSP) ので、間取り図は手元で取得して縮小し、データとして持たせている。
-  掲載元が「間取り図」の欄に写真を登録していることがあるため、白地の割合と階調の変化で写真らしい画像は外す (`plans.py` の `looks_like_photo`。
-  元画像の画素数では見分けられなかった: SUUMO が画像を約800pxにそろえているため。完全ではないので、気づいたら除外する物件を教えてもらう)。
-- `candidates.json` の `initial` は初期費用の目安 (万円)。敷金+礼金+仲介手数料+初回保証料+掲載にある(初期)費用+金額記載のある火災保険。
-  `initial_note` に前提 (仲手を1.1ヶ月と仮定 / 保証料は含まず) が入る。詳細キャッシュの形式を変えたら `candidates.py` の `CACHE_VERSION` を上げる。
-- `artifact/index.html` : ページのバックアップ。正本はアーティファクト側 (ページを直したら手で合わせる)。
+```bash
+python run.py                       # データを作る (約13分。HOME'S は任意)
+python scripts/build_viewer.py      # ローカルのビューアを更新 (ページを直したときだけ必要)
+python scripts/sync_artifact.py     # アーティファクトへ反映 (データが変わっていれば)
+```
 
-## 候補を入れ替える (ページは読み直さない)
+`sync_artifact.py` の中身:
+1. Claude (Haiku, headless) が3ファイルをアップロードする。道具は Artifact と Read のみ。
+2. スクリプトが `artifact_docs.py` で反映用ドキュメントを作る (`data/artifact_docs/`)。
+3. Claude (Haiku) が ArtifactData で datasets の version を読み、batch で更新し、古い blob を削除する。道具は ArtifactData・Artifact・Read。
+4. 成功したら、スクリプトが `data/artifact_state.json` を書く (blob の id、version、データのハッシュ)。失敗したら状態は変えない。
 
-1. データを作る (検索 -> 候補 -> 間取り図 -> 条件を1コマンドで。約7分)
-   ```bash
-   python run.py                              # 既定: 東横線・目黒線 / 東京都側 / 1LDK / 18万円以下 / 徒歩7分 / 築20年 / 28㎡より広い。SUUMO + HOME'S・at home・CHINTAI
-   python run.py --prefs tokyo kanagawa --walk 10 --max-age 35   # 条件を変える (画面上部の条件表示も自動で変わる)
-   python run.py --from-csv raw.csv           # SUUMO の検索済みの結果 (--raw raw.csv で保存) から作り直す。他サイトは --reuse-others で省略可
-   python run.py --no-others                  # SUUMO だけにする
-   ```
-   検索結果や候補が0件のときは何も上書きしない。少しの修正 (1行消す・メモを足す) なら `data/candidates.json` を直接編集してよい。
-2. JSON を1つずつ `Artifact` (`url` = 上のURL, `asset: true`, `file_path` = そのファイル) でアップロード → `/_blob/<id>` が返る。
-   JSON は1回の呼び出しに1ファイルずつ。`candidates.json` / `plans.json` / `conditions.json` の3回。
-3. 反映用のドキュメントを作り、`ArtifactData` の `batch` で `datasets/*` を `update` する:
-   ```bash
-   python artifact_docs.py --candidates <blob id> --plans <blob id> --conditions <blob id>   # ページも直したときは --page
-   ```
-   表示された `writes` の `if_version` に、各ドキュメントの現在の version を入れる (分からなければ `ArtifactData` の `get`。ドキュメントは小さい)。
-4. 古い `/_blob/<id>` を `Artifact` の `action: delete` + `path: <id>` で削除 (参照されなくなったので)。
+確かめ方: `python scripts/sync_artifact.py --dry-run` で判定と指示を見る。反映後は、ArtifactData の get で `datasets/candidates` の `source.url` が新しい blob を指していることを見る。
 
-## ページを直す
+## 注意
 
-- 小さな修正: `ArtifactData` の `str_replace` で `files/index.html` の `text` の該当箇所だけを置き換える。
-- まとまった修正: `artifact/index.html` を直し、`{"text": <html全文>, "edit": {...}}` の JSON ファイルを作って
-  `ArtifactData` の `update` に `file_path` で渡す (全文を会話に載せない)。
+- `claude` がログイン済みで、Artifact / ArtifactData が使えること。使えないときは、手動の手順 (下) を使う。
+- 画面の描画は、アーティファクト側では確認できない (自動チェックが返らない)。ローカルのビューアでは確認できる。
+- 間取り図や写真は掲載元の著作物。アーティファクトは共有しない (共有するときは先にユーザーに聞く)。
+
+## 手動の手順 (参考: スクリプトが使えないとき)
+
+1. 3ファイルを、それぞれ Artifact (`url` = 上の URL、`asset: true`、`file_path` = そのファイル) でアップロードし、`/_blob/<id>` を控える。
+2. `python artifact_docs.py --candidates <id> --plans <id> --conditions <id>` で反映用ドキュメントを作る。
+3. ArtifactData の get で `datasets` の各 version を読み、batch で3件を update する (`if_version` に読んだ version を入れる)。
+4. 古い blob を Artifact の delete (`path` = id) で消す。
+5. 最後に `data/artifact_state.json` の blobs / dataset_versions / synced_sha を書き直す。

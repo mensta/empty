@@ -1,0 +1,20 @@
+{
+  "url": "https://claude.ai/artifact/FGVqc2su3LU2XfoQKZMjHX",
+  "blobs": {
+    "candidates": "a81b95af24689e9b4e9d99a0e5fe3197",
+    "plans": "fcf0c2385d0b4ab1c3ae3eb94a387862",
+    "conditions": "e39a0025109788b1d7b571edffb3dd77"
+  },
+  "dataset_versions": {
+    "candidates": 6,
+    "plans": 5,
+    "conditions": 5
+  },
+  "synced_sha": {
+    "candidates": "dd21efbe6d148996989ac244fa1315c5e147db3a808da86cc70631dfe389f8a6",
+    "plans": "9e33579b27773e708f74804bdb02b729eeeab543f79d41fa1bd7bf25474d1dd0",
+    "conditions": "5fe9804278de2446bef02d5de71bc16613fe9832727417bfb4bf9f2f50728bdb"
+  },
+  "stale_blobs": [],
+  "synced_at": "2026-11-12T07:49:30+0000"
+}

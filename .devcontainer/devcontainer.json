@@ -1,0 +1,12 @@
+{
+  "name": "rental-search",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "postCreateCommand": "pip install -r requirements.txt && npm install -g @anthropic-ai/claude-code && python scripts/build_viewer.py",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": { "label": "viewer (http://localhost:8000/viewer/)", "onAutoForward": "notify" }
+  }
+}

@@ -1,0 +1,66 @@
+/* ローカル表示用のデザイントークン (Claude のアーティファクト実行環境が提供する変数の代わり) */
+:root {
+  --color-bg: #ffffff;
+  --color-panel: #f7f7f4;
+  --color-fg: #1d1d1b;
+  --color-fg-muted: #6b6b66;
+  --color-border-line: #d9d9d2;
+  --color-warn: #b45309;
+  --cds-border: #d9d9d2;
+  --cds-text-secondary: #6b6b66;
+  --cds-surface-popover: #ffffff;
+  --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --cds-chart-grid: #ebebe6;
+  --cds-chart-axis: #9a9a94;
+  --cds-chart-reference: #b45309;
+  --cds-radius: 6px;
+  --cds-pad-xs: 4px;
+  --cds-pad-sm: 8px;
+  --cds-pad-lg: 20px;
+  --cds-gap-xs: 4px;
+  --cds-gap-sm: 8px;
+  --cds-gap-md: 12px;
+  --cds-gap-lg: 20px;
+  --cds-font-size-caption: 12px;
+  --cds-font-size-body: 14px;
+  --cds-font-size-heading: 17px;
+  --cds-font-size-title: 26px;
+  --cds-font-weight-medium: 600;
+  --font-anthropic-sans: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --font-anthropic-serif: "Hiragino Mincho ProN", "Noto Serif JP", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #161615;
+    --color-panel: #1f1f1d;
+    --color-fg: #ecebe6;
+    --color-fg-muted: #a3a29a;
+    --color-border-line: #3a3a36;
+    --color-warn: #f59e0b;
+    --cds-border: #3a3a36;
+    --cds-text-secondary: #a3a29a;
+    --cds-surface-popover: #262624;
+    --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --cds-chart-grid: #2c2c29;
+    --cds-chart-axis: #6b6b66;
+    --cds-chart-reference: #f59e0b;
+  }
+}
+:root[data-theme="dark"] {
+  --color-bg: #161615;
+  --color-panel: #1f1f1d;
+  --color-fg: #ecebe6;
+  --color-fg-muted: #a3a29a;
+  --color-border-line: #3a3a36;
+  --color-warn: #f59e0b;
+  --cds-border: #3a3a36;
+  --cds-text-secondary: #a3a29a;
+  --cds-surface-popover: #262624;
+  --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --cds-chart-grid: #2c2c29;
+  --cds-chart-axis: #6b6b66;
+  --cds-chart-reference: #f59e0b;
+}
+html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
+body { padding: 16px; box-sizing: border-box; }
+.lx-plan img, .lx-popimg img { object-fit: contain; }
