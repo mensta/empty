@@ -60,6 +60,12 @@ Claude Code の初回ログインは、devcontainer の中で `claude` を起動
 - **仲介手数料の記載がない物件** は、1.1ヶ月分と仮定している (画面の注記に出る)。
 - 間取り図が1室ない (「図なし」と表示)。
 
+## 増分取得 (2026-11-12 追加)
+
+- `python run.py --incremental-others` で他サイトを新着順 + 既知ページで打ち切り (7日ごと・初回は全件)。状態は `data/known_ids.json` (git に入る。URL と日付のみ)。
+- 実サイト確認済み: 並び替えのパラメータ3つ、CHINTAI の増分 (2リクエストで打ち切り)。**未確認**: HOME'S と at home の増分の通し (検証中に at home は認証ページ、HOME'S は 202 が続き、休ませた)。次に HOME'S が取れる日に `--incremental-others` を1回走らせて確かめる。
+- スキル: `.opencode/skills/web-x-research` (X・Web 調査)、`.opencode/skills/rental-scraping-ops` (取得の運用、線引き、調査メモ)。opencode は再起動で読み込む。
+
 ## 次にやれること (候補)
 
 - HOME'S の再取得 (時間をおいて、一回ずつ確かめる)。

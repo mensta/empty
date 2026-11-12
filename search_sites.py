@@ -12,6 +12,7 @@ import unicodedata
 import requests
 import web
 
+import known_ids
 import sites
 import suumo_scraper as sc
 
@@ -29,14 +30,18 @@ LAYOUT_SLUG = {
 }
 
 
-def page_url(site, base, page, max_rent, walk, layout="1LDK"):
+def page_url(site, base, page, max_rent, walk, layout="1LDK", sort_new=False):
+    """sort_new: newest-first (used by the incremental crawl, see known_ids.SORT_NEW)."""
+    sort_key, sort_val = known_ids.SORT_NEW[site]
     if site == "HOME'S":  # 間取り・家賃・徒歩は URL で絞れる
         code = LAYOUT_SLUG["HOME'S"](layout)
         params = {f"cond[madori][{code}]": code, "cond[monthmoneyroomh]": f"{max_rent:g}", "cond[walkminutesh]": str(walk)}
+        if sort_new:
+            params[sort_key] = sort_val
         if page > 1:
             params["page"] = str(page)
         return base, params
-    return (base if page == 1 else f"{base}page{page}/"), None
+    return (base if page == 1 else f"{base}page{page}/"), ({sort_key: sort_val} if sort_new else None)
 
 
 def access_regex(lines):
@@ -56,11 +61,15 @@ def best_walk(access, lines):
     return best
 
 
-def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print, layouts=("1LDK",)):
+def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print, layouts=("1LDK",), incremental=None):
     """3サイトの一覧を最後のページまで集める。戻り値: (物件のリスト, 取得できなかったサイト)。
     あるサイトで取得に失敗し続けたら (アクセス制限など)、そのサイトは今回は丸ごと外して続ける。
-    SUUMO が本体で、他サイトは補助のため。取得できなかったことは呼び出し側が表示に反映する。"""
-    got, failed = {}, []
+    SUUMO が本体で、他サイトは補助のため。取得できなかったことは呼び出し側が表示に反映する。
+
+    incremental: {サイト名: 既知の URL の集合}。そのサイトは新着順で取り、ページ内の物件がすべて既知なら
+    そこで打ち切る (リクエスト数を減らす)。このとき戻り値は新しいページ分だけなので、呼び出し側が
+    known_ids.merge_rows で前回の結果と合わせる。"""
+    got, failed, incremental = {}, [], incremental or {}
     for site, (tmpl, slugs, fn) in TARGETS.items():
         if only and site not in only:
             continue
@@ -72,10 +81,11 @@ def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print
             for layout in usable:
                 if site in failed:
                     break
+                known = incremental.get(site)  # None = 全ページ取得
                 ses, n_before = web.new_session(), len(got)  # new connection per site / line / layout
                 try:
                     for page in range(1, max_pages + 1):
-                        url, params = page_url(site, tmpl.format(line=slugs[line], layout=slug_of(layout)), page, max_rent, walk, layout)
+                        url, params = page_url(site, tmpl.format(line=slugs[line], layout=slug_of(layout)), page, max_rent, walk, layout, sort_new=known is not None)
                         try:
                             rows = list(fn(sites.fetch(ses, url, params)))
                         except requests.HTTPError as e:
@@ -89,8 +99,10 @@ def collect(lines, max_rent, walk, max_pages=90, delay=1.5, only=None, log=print
                             raise RuntimeError("1ページ目が空でした")
                         if not new:
                             break
+                        if known is not None and all(r["url"] in known for r in rows):
+                            break  # 新着順なので、これより先はすべて既知
                         time.sleep(delay)
-                    log(f"  {site} {line} {layout}: {page} ページ、{len(got) - n_before} 件")
+                    log(f"  {site} {line} {layout}: {page} ページ、{len(got) - n_before} 件" + (" (増分)" if known is not None else ""))
                 except RuntimeError as e:
                     failed.append(site)
                     where = f"{line} {layout} の {page} ページ目"  # page は for の変数 (ここへは取得中にしか来ない)

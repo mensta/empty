@@ -34,3 +34,12 @@ python run.py        # 東横線・目黒線 / 東京都側 / 1LDK・2DK・2LDK 
 ```
 
 詳細は `run.py --help` と `ARTIFACT.md` (アーティファクトへの反映手順)。
+
+## 他サイトの増分取得
+
+```bash
+python run.py --incremental-others      # 他サイトは新着順で取り、既知のページで打ち切る (7日ごと・初回は全件)
+python run.py --incremental-others --full-others   # 今回は全件取得
+```
+
+HOME'S の WAF チャレンジ (202) は、リクエストが続くほど出やすい。増分取得はリクエスト数を減らすためのもの。状態は `data/known_ids.json`。

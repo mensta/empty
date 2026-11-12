@@ -17,6 +17,7 @@
 """
 import argparse
 import csv
+import datetime
 import os
 import re
 import sys
@@ -25,6 +26,7 @@ import time
 import web
 
 import candidates as cand
+import known_ids
 import others
 import plans
 import search_sites as ss
@@ -45,6 +47,29 @@ def write_raw(path, rows):
         w.writerows(rows)
 
 
+def collect_others(a, raw_path, out_dir):
+    """他サイトの一覧を取得し、known_ids の状態を更新して others_raw.json に保存する。
+    --incremental-others のときは、全件取得の期限内のサイトだけ新着ページだけを取り、前回の結果と合わせる。"""
+    state_path = os.path.join(out_dir, "known_ids.json")
+    state = known_ids.normalize(cand.load_json(state_path, None))
+    today = datetime.date.today()
+    prev = cand.load_json(raw_path, [])
+    plan = {}
+    if a.incremental_others:
+        plan = known_ids.plan_incremental(state, prev, list(ss.TARGETS), today, force_full=a.full_others)
+        for site in ss.TARGETS:
+            log(f"      {site}: " + ("増分 (新着順、既知のページで打ち切り)" if site in plan else "全件取得"))
+    fresh, failed = ss.collect(a.lines, a.max_rent, a.walk, a.max_pages, a.delay, log=log, layouts=a.layout, incremental=plan)
+    raw = known_ids.merge_rows(prev, fresh, set(plan), failed)
+    ok = set(ss.TARGETS) - set(failed)
+    full = ok - set(plan)
+    _, diff = known_ids.update(state, fresh, today, ok, full)  # fresh = rows actually seen this run
+    log(f"      掲載の変化: {diff.summary()}")
+    cand.save_json(state_path, state)
+    cand.save_json(raw_path, raw)
+    return raw
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="SUUMO の沿線検索 -> 候補JSON")
     ap.add_argument("--lines", nargs="+", default=["toyoko", "meguro"], choices=list(sc.LINES))
@@ -61,6 +86,9 @@ def main() -> int:
     ap.add_argument("--raw", help="検索結果を CSV でも保存する")
     ap.add_argument("--no-others", action="store_true", help="HOME'S / at home / CHINTAI を使わず、SUUMO だけにする")
     ap.add_argument("--reuse-others", action="store_true", help="他サイトは検索せず、<out-dir>/others_raw.json を使う")
+    ap.add_argument("--incremental-others", action="store_true",
+                    help=f"他サイトは新着順で取り、既知のページで打ち切る (前回の結果と合わせる)。{known_ids.FULL_EVERY_DAYS}日ごと、または初回は全件取得")
+    ap.add_argument("--full-others", action="store_true", help="--incremental-others を付けていても、今回は他サイトを全件取得する")
     ap.add_argument("--out-dir", default=cand.DATA)
     ap.add_argument("--cache", help="詳細ページのキャッシュ (既定: <out-dir>/detail_cache.json)")
     web.add_proxy_argument(ap)
@@ -112,8 +140,7 @@ def main() -> int:
             raw = cand.load_json(raw_path, [])
             log(f"      検索を省略: {raw_path} から {len(raw)} 件")
         else:
-            raw, _failed = ss.collect(a.lines, a.max_rent, a.walk, a.max_pages, a.delay, log=log, layouts=a.layout)
-            cand.save_json(raw_path, raw)
+            raw = collect_others(a, raw_path, out_dir)
         found = ss.filter_rows(raw, a.lines, a.layout, a.max_rent, a.walk, a.max_age, a.min_area)
         log(f"      条件に合う部屋: {len(found)} 件")
         by_url = {r["url"]: r for r in rows}
