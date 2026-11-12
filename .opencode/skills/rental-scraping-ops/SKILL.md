@@ -24,6 +24,10 @@ Read `AGENTS.md` (rules), `LESSONS.md` (symptom -> cause -> fix) and `HANDOFF.md
 - `known_ids.py`: state in `data/known_ids.json` (first_seen / last_seen / gone), `plan_incremental` (full crawl every 7 days because an incremental run cannot see removals), `merge_rows`, `update` (baseline, suspicious burst, failed sites never mark listings gone), `lifetimes` (days until removal: a rough popularity / decoy-ad signal).
 - `python run.py --incremental-others` / `--full-others`. Tests: `python3 -m unittest discover -s tests`.
 
+## Browser experiments
+
+Headless-browser fetching of HOME'S / at home (results, decisions, boundaries, next experiments): `scripts/browser_experiments/NOTES.md`. Rules kept there: no solving of human-verification puzzles, no IP-changing tricks, stop when blocked.
+
 ## Hard limits (observed)
 
 - HOME'S: WAF challenge as HTTP 202 with an empty body; it comes more often the more you request, and can persist for minutes. At home: after a burst it returns HTTP 200 with a "認証中" puzzle page (0 listings). A retry loop cannot fix a persistent challenge; waiting can.

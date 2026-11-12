@@ -1,0 +1,98 @@
+[
+ {
+  "page": 1,
+  "how": "goto",
+  "ok": true,
+  "secs": 1.9,
+  "doc": {
+   "status": 200,
+   "referer": null,
+   "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?cond%5Bmadori%5D%5B15%5D=15&cond%5Bmont"
+  },
+  "title": "【ホームズ】東急東横線 沿線の賃貸 物件一覧｜賃貸住宅[賃貸マンション・アパート",
+  "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?cond%5Bmadori%5D%5B15%5D=15&cond%5Bmont",
+  "buildings": 30,
+  "rooms": 59,
+  "total": "287"
+ },
+ {
+  "page": 2,
+  "how": "click",
+  "ok": true,
+  "secs": 2.3,
+  "doc": {
+   "status": 302,
+   "referer": "https://www.homes.co.jp/",
+   "url": "https://13503026.fls.doubleclick.net/activityi;src=13503026;type=230800;cat=_2cmz0;rcb=1;qty=1;npa=0"
+  },
+  "title": "【ホームズ】東急東横線 沿線の賃貸 物件一覧(2ページ)｜賃貸住宅[賃貸マンショ",
+  "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=2",
+  "buildings": 30,
+  "rooms": 44,
+  "total": "287"
+ },
+ {
+  "page": 3,
+  "how": "click",
+  "ok": true,
+  "secs": 1.9,
+  "doc": {
+   "status": 200,
+   "referer": "https://www.homes.co.jp/",
+   "url": "https://cf57b52da93ddcdf8a319da69074ff34.safeframe.googlesyndication.com/safeframe/1-0-45/html/conta"
+  },
+  "title": "【ホームズ】東急東横線 沿線の賃貸 物件一覧(3ページ)｜賃貸住宅[賃貸マンショ",
+  "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=3",
+  "buildings": 30,
+  "rooms": 52,
+  "total": "287"
+ },
+ {
+  "page": 4,
+  "how": "click",
+  "ok": true,
+  "secs": 2,
+  "doc": {
+   "status": 200,
+   "referer": "https://www.homes.co.jp/",
+   "url": "https://cm.g.doubleclick.net/partnerpixels?url=https%3A%2F%2Fwww.homes.co.jp%2Fchintai%2Ftokyo%2Ftok"
+  },
+  "title": "【ホームズ】東急東横線 沿線の賃貸 物件一覧(4ページ)｜賃貸住宅[賃貸マンショ",
+  "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=4",
+  "buildings": 30,
+  "rooms": 54,
+  "total": "287"
+ },
+ {
+  "page": 5,
+  "how": "click",
+  "ok": true,
+  "secs": 1.7,
+  "doc": {
+   "status": 200,
+   "referer": "https://www.homes.co.jp/",
+   "url": "https://gum.criteo.com/syncframe?topUrl=www.homes.co.jp&origin=onetag&ceid=6e9f0f8a-a8bf-4fba-8cc6-d"
+  },
+  "title": "【ホームズ】東急東横線 沿線の賃貸 物件一覧(5ページ)｜賃貸住宅[賃貸マンショ",
+  "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=5",
+  "buildings": 30,
+  "rooms": 47,
+  "total": "287"
+ },
+ {
+  "page": 6,
+  "how": "click",
+  "ok": true,
+  "secs": 1.2,
+  "doc": {
+   "status": 200,
+   "referer": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=5",
+   "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=6"
+  },
+  "title": "【ホームズ】東急東横線 沿線の賃貸 物件一覧(6ページ)｜賃貸住宅[賃貸マンショ",
+  "url": "https://www.homes.co.jp/chintai/tokyo/tokyutoyoko-line/list/?page=6",
+  "buildings": 19,
+  "rooms": 29,
+  "total": "287"
+ }
+]

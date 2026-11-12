@@ -64,3 +64,15 @@
 - `run.py` は既定で「家賃 + 管理費」を上限で判定する (`--no-include-admin` で家賃のみ)。サイト側の絞り込みは粗い前絞りとして残し、手元で `suumo_scraper.search_lines` / `search_sites.filter_rows` / `validate.validate` が同じ基準で判定する。画面の条件は「19万円以下(管理費込み)」と出る。管理費が書かれていない掲載は 0 円として数える。
 - 管理費込みにしても含まれないもの: 月額の保証料 (例: 月額賃料等の1%)、駐車場、更新料などの毎月以外の費用。「実質」の月額を見るなら別途足す必要がある。
 - 既存の結果を再取得なしで絞るときは、新しい条件が古い条件の部分集合であることを確かめてから、消す行だけを ID で消す。2026-11-12 は、家賃+管理費を Decimal で計算し直して判定し、境界 (19.0〜19.2 万) の 24 件を掲載元と突き合わせ、残した行が元と同一であること・`validate` が通ること・間取り図が候補と対応することを確かめた。
+
+## ヘッドレスブラウザで HOME'S / at home を取る実験 (2026-11-12、詳細は `scripts/browser_experiments/NOTES.md`)
+
+| 症状 | 原因 (分かっている範囲) | 対処・結果 |
+|---|---|---|
+| ヘッドレス Chromium で HOME'S が 403 「Request blocked」 | User-Agent が `HeadlessChrome` | User-Agent の `HeadlessChrome` を `Chrome` に置換すると 200 (1〜2回の試行) |
+| User-Agent だけ変えても、`sec-ch-ua` に `HeadlessChrome` が残り、食い違う | Client Hints は User-Agent の上書きでは変わらない | `Emulation.setUserAgentOverride` に `userAgentMetadata` を付けて揃える (`browser_experiments/hm_common.mjs`)。`navigator.webdriver` は触らない |
+| 巡回の2ページ目、目黒線の1ページ目 (URLを直接開く) で HOME'S が 405 「Let's confirm you are human」 | 不明。Referer なし・操作の連続性がない直接遷移が疑わしい | ページ送りは「次ヘ」リンクのクリックだと、東横線 6〜7ページが通った。ただし各1回 |
+| at home で、2ページ目 (番号リンクをクリック) が認証ページ | 不明 | 未解決。stealth の効き目の検証を予定 (NOTES.md の5.) |
+| ブラウザで取っても、一覧のデータは `requests` と同じ | 一覧がサーバー側で描画されている | 取得の経路としての選択肢であって、データは増えない。リクエスト数は1ページ約100〜140に増える |
+| HOME'S の「N 件」を棟数と読んで、ページ数を間違えた | N は部屋数 (1ページ30棟) | 東横線 1LDK は約6ページ、目黒線は約8ページ |
+| 同じ部屋が一覧の中に2回出る (114リンク=57室) | PC用とSP用のリンクが両方ある | URL で重複を除く (既存の `collect` はそうしている) |

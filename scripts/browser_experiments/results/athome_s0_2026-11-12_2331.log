@@ -1,0 +1,4 @@
+{"page":1,"how":"goto","status":200,"ok":true,"secs":2.1,"title":"【アットホーム】東急東横線の賃貸 「間取り1LDKの賃貸物件」の物件一覧（東京都","url":"https://www.athome.co.jp/chintai/theme/madori_1ldk/tokyo/tokyutoyoko-line/list/?sort=33","cards":30,"rooms":115,"sort":"新着順","total":null,"challenge":false,"err":null}
+{"page":2,"how":"click","status":null,"ok":false,"secs":16.9,"title":"認証にご協力ください。","url":"https://www.athome.co.jp/chintai/theme/madori_1ldk/tokyo/tokyutoyoko-line/list/page2/","cards":0,"rooms":0,"sort":null,"total":null,"challenge":true,"err":null}
+STOP: blocked or empty at at home page 2 (no retry, no bypass)
+{"summary":{"loads":2,"ok":1,"rooms":115}}

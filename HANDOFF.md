@@ -53,3 +53,7 @@ python -m http.server 8000                    # http://localhost:8000/viewer/
 - `python run.py --incremental-others` で他サイトを新着順 + 既知ページで打ち切り (7日ごと・初回は全件)。状態は `data/known_ids.json` (git に入る。URL と日付のみ)。
 - 実サイト確認済み: 並び替えのパラメータ3つ、CHINTAI の増分 (2リクエストで打ち切り)。**未確認**: HOME'S と at home の増分の通し (検証中に at home は認証ページ、HOME'S は 202 が続き、休ませた)。次に HOME'S が取れる日に `--incremental-others` を1回走らせて確かめる。
 - スキル: `.opencode/skills/web-x-research` (X・Web 調査)、`.opencode/skills/rental-scraping-ops` (取得の運用、線引き、調査メモ)。opencode は再起動で読み込む。
+
+## ヘッドレスブラウザの実験 (2026-11-12、進行中)
+
+HOME'S / at home を、ヘッドレスブラウザの「リンクをクリックして進む」方式で取れるかの実験。結果・決定事項・次の実験・組み込み案は `scripts/browser_experiments/NOTES.md`。要点: User-Agent と Client Hints を Chrome に揃えると通る場面があり、HOME'S は「クリックで進む」と東横線7ページが通った (URL直接は405)。at home は2ページ目で弾かれた。stealth の効き目の検証 (S0〜S3) が次。ユーザーの方針: 安定するなら HOME'S はこの方式で取る。
