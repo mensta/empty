@@ -43,6 +43,14 @@ class TestBuildSite(unittest.TestCase):
             self.assertEqual(n, 0)
             self.assertEqual(os.listdir(os.path.join(out, "plans")), [])
 
+    def test_missing_plans_json_gives_a_clear_error(self):
+        with tempfile.TemporaryDirectory() as data, tempfile.TemporaryDirectory() as out:
+            write_data(data)
+            os.remove(os.path.join(data, "plans.json"))
+            with self.assertRaisesRegex(SystemExit, "plans.json"):
+                pub.build_site(out, data_dir=data)
+            self.assertEqual(pub.build_site(out, with_plans=False, data_dir=data)[0], 0)
+
     def test_rejects_unexpected_image_format(self):
         with tempfile.TemporaryDirectory() as data, tempfile.TemporaryDirectory() as out:
             write_data(data)

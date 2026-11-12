@@ -47,7 +47,10 @@ def build_site(out_dir=DEFAULT_OUT, with_plans=True, data_dir=DATA):
     """Write out_dir/index.html and out_dir/plans/*.webp. Returns (number of plan files, size of index.html in bytes)."""
     candidates = json.load(open(os.path.join(data_dir, "candidates.json"), encoding="utf-8"))
     conditions = json.load(open(os.path.join(data_dir, "conditions.json"), encoding="utf-8"))
-    plans_src = json.load(open(os.path.join(data_dir, "plans.json"), encoding="utf-8")) if with_plans else []
+    plans_path = os.path.join(data_dir, "plans.json")
+    if with_plans and not os.path.exists(plans_path):
+        raise SystemExit("data/plans.json not found (it is not in git). Get it from the previous maintainer, run `python run.py`, or pass --no-plans.")
+    plans_src = json.load(open(plans_path, encoding="utf-8")) if with_plans else []
 
     plans_dir = os.path.join(out_dir, "plans")
     os.makedirs(plans_dir, exist_ok=True)
