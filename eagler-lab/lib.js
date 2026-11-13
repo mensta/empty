@@ -17,6 +17,7 @@ exports.launch = async ({
   html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS || '.', gate = true,
   viewport = { width: 1280, height: 720 }, shotTimeout = 30000,
   logFile = process.env.EAGLER_LOG || null,            // G3: full, timestamped, never filtered
+  beforeGoto = null,                                   // async (page) => {...}: attach listeners before the page loads
 } = {}) => {
   if (!html) throw new Error('set EAGLER_HTML to the Eaglercraft html path');
   const browser = await chromium.launch({
@@ -39,6 +40,7 @@ exports.launch = async ({
   page.on('pageerror', (e) => { rec('pageerror', String(e)); logs.push('[pageerror] ' + String(e).slice(0, 300)); });
   page.on('requestfailed', (r) => rec('requestfailed', r.url().slice(0, 200)));
 
+  if (beforeGoto) await beforeGoto(page);
   if (gate) await page.addInitScript(GATE);
   await page.goto('file://' + html);
   await page.click('#skipCountdown');

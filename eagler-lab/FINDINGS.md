@@ -344,3 +344,23 @@ resource reload 3109, texture atlas **5867**. WASM-GC reaches the texture atlas 
 - The hook, `setCamera` and the virtual clock were built for the JS build; the WASM-GC build has no JS-visible minified singleton to hook, so
   none of the capture tooling that needs `__eagMC` works on it (screenshots, `render()` and chat do).
 - Both builds requested the same four WebGL extensions and compiled a similar number of shader programs (JS 28, WASM-GC 25 in this scene).
+
+## 15. The integrated server really is a separate Web Worker (R16)  [verified in code and at run time]
+Earlier sections (11, 12) stated this from log tags and strings (`IntegratedServer` thread name, "WorkerMain: ...", CSP `worker-src data: blob:`) and,
+for the virtual clock, assumed the server would keep real time. Both are now checked directly:
+- **Code**: the server-start function (minified `FDy`) contains `e = new $rt_globals.Worker($rt_ustr(url))`, stores it in a static, registers an
+  `"error"` listener and an `onMessage` handler for the `"message"` event; the worker source is a Blob URL (`createObjectURL`). Messages travel through
+  `postMessage` (25 references) / `message` listeners (15). The `FDy` branch for `singleThreadMode` skips the Worker (the launch option exists).
+- **Run time** (Playwright, listeners attached before navigation, one run): **0 Workers before** creating a world, **1 after**, created at world creation,
+  URL scheme `blob:`, global scope **`DedicatedWorkerGlobalScope`**, `typeof window === 'undefined'`, `importScripts` is a function: a real dedicated Web Worker
+  with its own global scope, started from a Blob.
+- **Clock independence**: with the page's `performance.now` held (section 11) for 20 s of wall time, the page clock moved **0 ms** and the Worker's
+  `performance.now` moved **20,056 ms**; the server's game time (`/time query gametime`) went 1150 -> 1668, **+518 ticks in 25.9 s = 20.03 ticks/s
+  across the pause**. So the server keeps real time and is not slowed by the virtual clock; the virtual clock only controls the client.
+- **No network traffic in this scenario**: from page load through creating and playing a singleplayer world (including the paused-clock test) Playwright saw
+  **0 HTTP requests** (excluding `file:`/`data:`/`blob:`) and **0 WebSockets**. The configured shared-world relay was not contacted (no shared world was
+  opened). Limit: requests made by the Worker itself might not be listed by the page-level listener.
+- **A second, dormant Worker exists in the code ("zeus cloud")**: a block near the end of `main.js` can start a Worker from an embedded script, but only if
+  `window.eaglercraftXOpts.zeusCloud.endpoint` is a non-empty string; otherwise it sets `{"status":"disabled"}` and returns. This build's options do not set it:
+  `window.__zeusCloud.state` was `{"status":"disabled"}` and no second Worker appeared. What the script would do with an endpoint (its messages are `init`,
+  `token`, `cmd`, `state`, `result`) was not run or analysed.
