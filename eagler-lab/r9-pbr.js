@@ -9,8 +9,10 @@ const fs = require('fs');
   await click(878, 275, 3500);            // Shaders...
   await click(400, 659, 2500);            // Enable Shaders: No -> Yes
   await shot('50-shaders-enabled');
-  await click(878, 659, 2500);            // Done (shaders)
-  await click(640, 653, 3000);            // Done (options)
+  await click(878, 659, 12000);           // Done (shaders) -> "Refreshing Resources... Please Wait." (swallows clicks)
+  await shot('50b-after-refresh');
+  await click(640, 653, 4000);            // Done (options) -> title
+  await shot('50c-title');
   const before = await page.evaluate(() => ({ programs: window.__gl.createdPrograms, shaders: window.__gl.shaders.length }));
   await enterWorld('eagler', { first: false });
   await chat('/gamemode spectator'); await chat('/tp @p 100.5 100 200.5 0 0');
