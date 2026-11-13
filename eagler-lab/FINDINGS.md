@@ -57,8 +57,10 @@ No music tracks are present (the game logs "File ... does not exist" for each) �
   **29 programs, 21 of them core variants**, each compiled once (cache works), created in bursts when a
   GL state combination first appears (menus, world load). Only 9 of the 12 flags were hit
   (no TEX_GEN, ANISOTROPIC_FIX, BLEND_ADD in this short session).
-  **No deferred/PBR flag was ever compiled** with default settings: the PBR pipeline described above
-  exists in the pack but did not run in this session. (Not yet tested: enabling it in options.)
+  **No deferred/PBR flag is compiled with default settings** — the pack's PBR pipeline is OFF by default.
+  (Turning it on is covered in "R9" below.) The game's own log confirms the bit reading: the deferred
+  pipeline logs lines like `Compiling program for core state: 1 4 16 64, ext state: 8`
+  (= TEXTURE_ATTRIB, NORMAL_ATTRIB, ENABLE_TEXTURE2D, ENABLE_ALPHA_TEST).
   Not read: the state-tracking code that decides which bits to set (the GL-call side before `C3n`).
 - Shader sources carry `Copyright (c) 2022-2024 lax1dude` — they are the project's own code,
   not Mojang's. [verified]
@@ -103,6 +105,27 @@ The server logs `Can't keep up! ... skipping N tick(s)` when the CPU is starved 
   * GL commands attempted/s: ON ~2.5k, OFF ~5.8k (the game also issues more draws per second when frames
     are faster). The earlier "792 commands/s -> 0" figure was a single sample in a different scene.
   * Not measured: other resolutions, a real GPU, WASM-GC build; clears-per-frame was assumed constant.
+- **PBR shader pack (R9)  [verified, one run]**: Options -> `Shaders...` shows the built-in pack
+  "High Performance PBR", author lax1dude, version 1.4.2, with sub-options (Waving Grass, Dynamic Lights,
+  Global SSAO ... all ON). `Enable Shaders: No -> Yes`, then `Done` triggers "Refreshing Resources...
+  Please Wait." (about 10 s; clicks sent meanwhile are swallowed).
+  * **It really runs**: after entering a world, shader programs went **24 -> 84** and shader sources
+    47 -> 138; new flags appeared: SSAO reprojection, SSR (screen-space reflections), env-map
+    reflections, sun shadows (LOD2, smooth), subsurface scattering, atmospheric + linear fog, clouds,
+    paraboloid sky/env map, dynamic lights, waving blocks, G-buffer vs forward vertex paths. The log tag is
+    `DeferredGBufferPipelineCompiler`. Largest shader sources are ~27 KB of GLSL each.
+  * **WebGL extensions the game requests** (all granted here): `EXT_color_buffer_float`,
+    `OES_texture_float_linear`, `EXT_texture_filter_anisotropic`, `WEBGL_debug_renderer_info`.
+    (Recorded `getExtension` calls only — "requested", not proven "required".) Needs WebGL 2.0 for the
+    GLES 3.00 path.
+  * **Cost under software GL (SwiftShader, 1280x720)**: F3 showed **1 fps** (single read, integer display),
+    `TPS: 20/20`. Steady state over 11 probes: ~10.5 `clear` calls/s and ~560 GL commands/s reaching the
+    GPU (vs ~105 clears/s and ~2.5k cmds/s with PBR off) — frames are an order of magnitude slower while
+    the simulation keeps 20 TPS. One screenshot could take more than 60 s; the default 30 s timeout failed.
+    "Time per frame" is therefore on the order of a second here; it says nothing about a real GPU.
+  * Caveat: in this run the inventory screen was open (at ~1 fps the typed `/tp`/`/gamemode` did not get
+    through and a letter opened the inventory), so there is no clean before/after still at an identical
+    pose yet. The screenshot does show PBR-lit terrain (soft shadows, dim lighting), but not as a fair comparison.
 - **Player state** (this build only): `mc = window.__eagMC()` (needs a one-line hook patch on a COPY),
   `mc.bR` = player; `D/J/E` = x/y/z, `bN/cR` = yaw/pitch, bounding box `mc.bR.dz`
   (`cG/b4/cF` min, `cL/cI/cM` max).
@@ -116,7 +139,7 @@ The server logs `Can't keep up! ... skipping N tick(s)` when the CPU is starved 
 - [research] "LWJGL rewritten for WebGL" — not checked in code.
 - Multiplayer path: the launch options list a shared-world relay (`wss://relay.eaglercraft.net/`);
   the WebSocket proxy path described in research was not exercised.
-- WASM-GC build not compared. PBR pipeline not exercised (not compiled with default options). Textures/lang contents not inspected.
+- WASM-GC build not compared. PBR: no clean before/after still at the same pose; no real-GPU frame time. Textures/lang contents not inspected.
 
 ## 9. Legal/sensitivity note for the video
 The build bundles Mojang's assets and the project's own site carries a DMCA page. Explaining the
