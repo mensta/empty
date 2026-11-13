@@ -313,3 +313,34 @@ own text; these are the authors' statements, not independently checked.
 - The credits text never uses the word "Mojang" (0 occurrences; "Minecraft" 5). It contains no licence or permission
   statement from Mojang/Microsoft.
 - `EPKVersionIdentifier.txt` in the pack contains `u53`, i.e. the "u53" in "EaglercraftX 1.8-u53" is the pack's update number.
+
+## 14. The WASM-GC build compared with the JS build (R11)  [verified for structure; performance inconclusive]
+Official offline zips from the same page: `eaglercraft1-8-62da5f39.zip` (JS) and `eaglercraft1-8-wasm-62da5f39.zip` (WASM-GC).
+**Structure**
+| | JS build | WASM-GC build |
+|---|---|---|
+| zip | 13.55 MB | 12.66 MB |
+| HTML | 34.9 MB (JS program 22.6 MB as text + 12.27 M base64 chars of EPK) | **16.8 MB** (one 16.75 M-char base64 blob + a 7.9 KB loader script) |
+| game code | TeaVM-generated JavaScript, minified names | **14.46 MB WebAssembly (WasmGC) module**, stored XZ-compressed as 2.26 MB |
+| assets | EPK 9,202,347 B, 4872 entries | **EPK 9,202,347 B, same size** |
+| debug info | string pool without field names; no symbol map in the file | **5.34 MB TeaVM debug-info blob (`tdbg`, `classes.wasm.teadbg`)** with class and method names (`Minecraft`, `getMinecraft`, `MinecraftServer`, `launchIntegratedServer`, `EntityPlayerSP`, `GlStateManager`...); **no field names** (`thePlayer`, `posX`: 0 hits); package names stored as separate parts |
+- The WASM-GC page carries an **"EPW" bundle** (magic `EAG$WASM`, 12,565,525 B): an uncompressed Emscripten-built loader WASM
+  (~47 KB), then XZ sections: an HTML page (327 KB), JS glue `eagruntime.js` (110 KB), the game WASM (14.5 MB), the TeaVM debug blob
+  (5.3 MB), a 37 KB helper WASM, and the EPK. The loader logs each step: "Checking primary CRC32 checksum", "Copying non-compressed segments",
+  "Decompressing eagruntime.js / classes.wasm / classes.wasm.teadbg / deobfuscator / assets EPK", "Loading EaglercraftX WASM GC binary...",
+  "WebAssembly direct memory resized to 32.56 MiB". (Matches the credits: Emscripten for the loader, XZ for the runtime.)
+- So the two builds share the same assets and the same Java game code; they differ in the TeaVM target (JS vs WasmGC) and the packaging.
+
+**Startup (software GL, one run each, ms since navigation)** - JS: first log line 1480, WebGL context 1820, assets loaded 3879,
+user set 4195, resource reload 5944, texture atlas 9845. WASM-GC: first log line **498**, WebGL context 1591, assets loaded **2183**, user set 2317,
+resource reload 3109, texture atlas **5867**. WASM-GC reaches the texture atlas about **4 s sooner** (page parse is lighter: 16.8 MB vs 34.9 MB).
+
+**Not conclusive (do not state as fact)**
+- *In-game speed*: the game's own F3 counter read **18 / 21 / 19 fps** (JS, three reads) and **8 / 36 / 44 fps** (WASM-GC, rising over ~1.5 min);
+  `clear` calls per second were 47-49 (JS, stable) vs 75 -> 63 -> 51 (WASM-GC, falling). The two signals disagree for WASM-GC, there is one run per
+  build, and a screenshot of the WASM-GC page took 28-34 s (a JS plain still takes ~2 s). Software GL dominates both. No claim that one is faster.
+- *Memory*: JS heap 376 -> 114 -> 135 MB (load / title / world) vs 84 -> 83 -> 94 MB for WASM-GC; **not comparable**: WebAssembly linear
+  memory (32.56 MiB+) is outside the JS heap metric.
+- The hook, `setCamera` and the virtual clock were built for the JS build; the WASM-GC build has no JS-visible minified singleton to hook, so
+  none of the capture tooling that needs `__eagMC` works on it (screenshots, `render()` and chat do).
+- Both builds requested the same four WebGL extensions and compiled a similar number of shader programs (JS 28, WASM-GC 25 in this scene).
