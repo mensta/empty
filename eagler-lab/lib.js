@@ -161,6 +161,19 @@ exports.launch = async ({
     return w;
   };
 
+  // ---- virtual time: one step = advance the page clock by `ms`, then wait until the game has run at least one
+  // frame (>= minClears gl.clear calls) so its timer consumes the step. The game timer caps catch-up at 10 ticks
+  // per frame, so never jump by more than ~100 ms at once; fractional ticks carry over between frames.
+  const vtEnable = () => page.evaluate(() => window.__vt.enable());
+  const vtDisable = () => page.evaluate(() => window.__vt.disable());
+  const clearsNow = () => probe(() => window.__gl.frames, null, 120000);
+  const vtStep = async (ms, { minClears = 10, maxMs = 120000 } = {}) => {
+    const c0 = await clearsNow(); await page.evaluate((m) => window.__vt.advance(m), ms);
+    const t = Date.now();
+    while (Date.now() - t < maxMs) { const c = await clearsNow(); if (c !== null && c - c0 >= minClears) return c - c0; await page.waitForTimeout(20); }
+    return null;
+  };
+
   // ---- G1: draw frames with the gate open, take ONE still, close the gate again.
   // Waiting a fixed number of clears is NOT enough: Minecraft only rebuilds a limited number of chunk
   // sections per frame, so right after a move the terrain may be missing (seen: a sky-only first frame).
@@ -212,7 +225,7 @@ exports.launch = async ({
   };
 
   return { browser, page, logs, rawLogs, click, shot, chat, render, glStats, probe, enterWorld, skipFirstRun, getState, setCamera,
-    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, warmPath, diffPct };
+    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, warmPath, diffPct, vtEnable, vtDisable, vtStep, clearsNow };
 };
 
 // Camera-path helpers for captureSequence

@@ -1,6 +1,19 @@
 // Injected into the page BEFORE any game script runs (page.addInitScript).
 // Wraps WebGL2 command entry points so the GPU never receives draw work while
 // window.__gl.on === false. Game logic / chunk meshing / networking keep running.
+
+// ---- Virtual clock (installed before any game script). While __vt.on the page sees a clock that only moves
+// when the capture script advances it: performance.now() and Date.now() are replaced. The integrated server
+// runs in a Worker with its own real clock - this does NOT slow it down.
+(() => {
+  const realPerf = performance.now.bind(performance), realDate = Date.now.bind(Date);
+  const vt = (window.__vt = { on: false, t: 0, t0: 0, d0: 0, calls: { perf: 0, date: 0 } });
+  performance.now = function () { vt.calls.perf++; return vt.on ? vt.t : realPerf(); };
+  Date.now = function () { vt.calls.date++; return vt.on ? vt.d0 + (vt.t - vt.t0) : realDate(); };
+  vt.enable = () => { vt.t = realPerf(); vt.t0 = vt.t; vt.d0 = realDate(); vt.on = true; };
+  vt.advance = (ms) => { vt.t += ms; };
+  vt.disable = () => { vt.on = false; };
+})();
 (() => {
   const gl2 = window.WebGL2RenderingContext;
   if (!gl2) return;
