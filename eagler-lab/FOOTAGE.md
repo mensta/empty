@@ -38,3 +38,11 @@ Same conditions as above unless noted (PBR off, build u53 JS). `SHA256SUMS.txt` 
 | `boot-log.txt` | `c80de52a2be18e1ec8ab7668a2ebe4e2e8cc0274da8003130168731fbfa3c7e7` | raw unfiltered console log of the recording run, 119 lines, ms since the recorder attached, cut at 23000 ms |
 | `code-snippets.json` | `ac227948adccbade9bd98c85d6c02c924b90b64b2e45f70b9732fe9e54889c8b` | 3 excerpts of the original HTML with byte offsets (a: lines 4517-4528, b: lines 4507-4509 DL0, c: COMPILE_* names) |
 | `credits-lines.json` | `573ce2b1409f2512d881dda925ceacf38acacd3b78d9faafcd759171660abfd6` | lines 8/10/11/69 of assets/eagler/CREDITS.txt, verbatim |
+| `orbit-long-8s-720p-30fps.mp4` | `6e2d566da33201bebd060ef94dc702661adda19fd0809dbccf68c867f0e489c5` | 1280x720 (a 1080p try cost ~22 s/frame, so 720p), 240 frames at 30 fps = 8.000 s, 0.667 turn around the point 25 blocks ahead of [100.5,100,200.5], radius 25, start yaw 45, pitch 10; 43 min wall; 0 pose mismatches; `video-test.js` (FRAMES=240 STOPS=14 TAG=long) |
+| `orbit-long-240frames-png.tar` | `6c5302d8db92f92feb21f8f6abcc6d31b70a63a531e61a5554c395c6ab9ad34b` | source PNGs + manifest.json |
+| `log-lines.json` | `ad0823c7f016197a6d5b185880973a0a92cca57d61490db6dac777091216dbe2` | selected lines with ms from that run's raw log (Setting user, thread names, 3 music lines, 4872 line, both "Can't keep up!" warnings with context) |
+| `walk-6s-720p-30fps.mp4` | `981911c1c9f1cfd2e77067fc7a9ba06e4cc7b5b1c02b50f4bae7d70b0e94bb6f` | village walk, 180 frames, x=568.5, z 546.5 -> 564.5 facing +Z, eye = ground+1.62+0.25, pitch 3; village found via 1.8.8 candidate-chunk formula (see `scout.js`, `ground-probe.js`, `walk-capture.js`); no entities (freezeWorld kills them) |
+| `walk-180frames-png.tar` | `734112e434a93631a706050a3ae159534fbd3b603349b3635fefc00a4ec14e35` | source PNGs + manifest.json |
+| `walk-path.json` | `5c4380b0a8475e56232e4c13c9e09e5154abd3029c55c868b24c8fe6d10ae982` | x/z range, eye height, ground samples used |
+
+Public-page screenshots (eaglercraft.com home with the TeaVM sentence, home top, credits page; 1920x1080 viewport, taken 2026-11-13 11:39 UTC, no login) and `C-provenance.json` were also uploaded. The github.com/github/dmca page cannot be opened from this sandbox (HTTP 403) and the video lead no longer needs it.
