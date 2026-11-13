@@ -7,12 +7,12 @@ const fs = require('fs');
 const DEFAULT_HTML = process.env.EAGLER_HTML;
 const GATE = fs.readFileSync(__dirname + '/gl-gate.js', 'utf8');
 
-exports.launch = async ({ html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS || '.', gate = true } = {}) => {
+exports.launch = async ({ html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS || '.', gate = true, viewport = { width: 1280, height: 720 }, shotTimeout = 30000 } = {}) => {
   if (!html) throw new Error('set EAGLER_HTML to the Eaglercraft html path');
   const browser = await chromium.launch({
     args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
   });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const page = await browser.newPage({ viewport });
   const logs = [];
   page.on('console', (m) => { const t = m.text(); if (!/does not exist|OptiFine/.test(t)) logs.push(t.slice(0, 240)); });
   page.on('pageerror', (e) => logs.push('[pageerror] ' + String(e).slice(0, 300)));
@@ -27,7 +27,7 @@ exports.launch = async ({ html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS 
     await page.mouse.down(); await page.waitForTimeout(500); await page.mouse.up();
     await page.waitForTimeout(wait);
   };
-  const shot = (name) => page.screenshot({ path: `${shots}/${name}.png` });
+  const shot = (name) => page.screenshot({ path: `${shots}/${name}.png`, timeout: shotTimeout });
   const chat = async (cmd) => {
     await page.keyboard.press('t'); await page.waitForTimeout(700);
     await page.keyboard.type(cmd, { delay: 30 });

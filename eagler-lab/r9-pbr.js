@@ -3,7 +3,7 @@
 const L = require('./lib.js');
 const fs = require('fs');
 (async () => {
-  const { browser, page, logs, click, shot, chat, glStats, skipFirstRun, enterWorld } = await L.launch();
+  const { browser, page, logs, click, shot, chat, glStats, skipFirstRun, enterWorld } = await L.launch({ shotTimeout: 240000 });
   await skipFirstRun();
   await click(485, 605, 3000);            // Options
   await click(878, 275, 3500);            // Shaders...
@@ -17,22 +17,25 @@ const fs = require('fs');
   await enterWorld('eagler', { first: false });
   await chat('/gamemode spectator'); await chat('/tp @p 100.5 100 200.5 0 0');
   await page.keyboard.press('F1');
-  const timeline = [];
-  for (const wait of [5000, 15000, 30000]) {
-    await page.waitForTimeout(wait);
-    const s = await page.evaluate(() => ({ t: Math.round(performance.now() / 1000), programs: window.__gl.createdPrograms, sources: window.__gl.shaders.length }));
-    timeline.push(s); await shot(`51-pbr-t${timeline.length}`);
+  // Hang-safe sampling: every evaluate is raced against a timeout; a miss means the main thread was
+  // blocked for that long (one PBR frame under software GL can exceed it).
+  const probe = async (ms) => Promise.race([
+    page.evaluate(() => ({ t: Math.round(performance.now()), programs: window.__gl.createdPrograms, sources: window.__gl.shaders.length, clears: window.__gl.frames, passed: window.__gl.passed })),
+    new Promise((res) => setTimeout(() => res(null), ms)),
+  ]);
+  const timeline = []; const t0 = Date.now();
+  for (let i = 0; i < 14; i++) {                       // ~ 14 x 15 s
+    await page.waitForTimeout(15000);
+    const s = await probe(60000); timeline.push({ wall: Math.round((Date.now() - t0) / 1000), s });
+    console.error('probe', i, JSON.stringify(s));
+    if (i === 2 || i === 8) { try { await shot(`51-pbr-${i}`); } catch (e) { console.error('shot failed', String(e).slice(0, 80)); } }
   }
-  await page.evaluate(() => window.__gl.reset());
-  await page.waitForTimeout(12000);
-  const g = await glStats();
-  await page.keyboard.press('F1'); await page.keyboard.press('F3'); await page.waitForTimeout(3000);
-  await page.screenshot({ path: process.env.EAGLER_SHOTS + '/52-pbr-f3.png', clip: { x: 0, y: 28, width: 520, height: 30 } });
-  await shot('53-pbr-f3-full');
+  const g = null;
+  try { await page.keyboard.press('F1'); await page.keyboard.press('F3'); await page.waitForTimeout(5000); await shot('53-pbr-f3-full'); } catch (e) { console.error('f3 shot failed'); }
   const gl = await page.evaluate(() => ({ shaders: window.__gl.shaders, programs: window.__gl.createdPrograms, ext: window.__gl.extensions }));
   const flagCount = {}; for (const s of gl.shaders) for (const f of s.flags) flagCount[f] = (flagCount[f] || 0) + 1;
   const sizes = gl.shaders.map((s) => s.n).sort((a, b) => b - a).slice(0, 8);
-  console.log(JSON.stringify({ before, timeline, window12s: g, programs: gl.programs, sources: gl.shaders.length, flagCount, biggestSources: sizes,
+  console.log(JSON.stringify({ before, timeline, programs: gl.programs, sources: gl.shaders.length, flagCount, biggestSources: sizes,
     extensions: [...new Map(gl.ext).entries()] }, null, 1));
   console.log('LOG shader/gl/error lines:'); console.log(logs.filter((l) => /shader|pbr|gbuffer|error|fail|warn.*gl|framebuffer|extension/i.test(l) && !/does not exist/.test(l)).slice(-25).join('\n'));
   fs.writeFileSync(process.env.OUT || 'r9.json', JSON.stringify(gl));
