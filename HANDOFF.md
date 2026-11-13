@@ -1,4 +1,4 @@
-# 引き継ぎメモ (2026-11-12 夜 時点)
+# 引き継ぎメモ (2026-11-13 午後 時点)
 
 東横線・目黒線の賃貸候補 (1LDK・2DK・2LDK) を集めて、ローカルのビューアで見る。公開は S3 (CloudFront 経由)。作業の前提は `AGENTS.md`、落とし穴は `LESSONS.md`。Claude のアーティファクトは今後更新しない (旧手順は `ARTIFACT.md`、参考用)。
 
@@ -57,3 +57,12 @@ python -m http.server 8000                    # http://localhost:8000/viewer/
 ## ヘッドレスブラウザの実験 (2026-11-12、進行中)
 
 HOME'S / at home を、ヘッドレスブラウザの「リンクをクリックして進む」方式で取れるかの実験。結果・決定事項・次の実験・組み込み案は `scripts/browser_experiments/NOTES.md`。要点: User-Agent と Client Hints を Chrome に揃えると通る場面があり、HOME'S は「クリックで進む」と東横線7ページが通った (URL直接は405)。at home は2ページ目で弾かれた。stealth の効き目の検証 (S0〜S3) は実施済みで、効いたとは言えない。HOME'S は、路線ごとに新しいブラウザ + クリック巡回で、一覧も詳細 (79室) も取れた。候補に加わるのは8室のみ (木造が多い)。反映と `run.py` への組み込みは未了。詳細は `scripts/browser_experiments/NOTES.md` の9.ユーザーの方針: 安定するなら HOME'S はこの方式で取る。
+
+## 2026-11-13 午後: HOME'S と DOOR賃貸を候補に取り込み (コミット済み、S3 は未公開)
+
+- `data/candidates.json` は **209 -> 227室** (HOME'S 10室 + DOOR 8室を追加。うち HOME'S の1室は DOOR にも載っていて `also` に DOOR)。バックアップは作業時にリポジトリ外へ取ったのみ (git の前コミットに209室版がある)。`data/conditions.json` の掲載サイトに HOME'S・DOOR賃貸を追加。
+- HOME'S の取りこぼし3室 (82室中79室しか詳細を取れていなかった分) は、運用の結論どおり (路線ごとに新しいブラウザ、1ページ目 goto、次へクリック、路線の間13分) で **3室とも取得、弾かれなし**。HOME'S 82室 + DOOR 14室 -> 部屋単位 58室 -> 木造 33・写真不足 7 を除いて 18室。
+- DOOR は `others.door_detail` (取得済みの `data/door_extra.json` を詳細キャッシュの形に変換。再クロールなし)。サイト間の同一部屋は `others.merge_across_sites` ((面積、家賃+管理費、間取り) が同じで掲載サイトが重ならないもの) でまとめる。反映は `scripts/adopt_browser_rooms.py` (通信なし。`--write --backup <パス>`)。入力の HTML は /tmp/opencode/pw2/runs/list_recommend (消えうる)。
+- 追加18室は**間取り図 (plans) なし**、S3 は未更新 (公開はしていない)。ビューアは `python scripts/build_viewer.py` で作り直してから見る (未確認)。
+- 注意: DOOR 由来の「その他」構造2室 (HappyHouse 西小山。木造かもしれない)、DOOR の初期費用は保証料・鍵交換を含まない (目安の下限)。DOOR の利用規約は未確認。
+- 未了: 間取り図の取得、`run.py` への組み込み (`--homes-browser`)、一覧の取りこぼし約3%、at home のブラウザ取得、東急住宅リースの2ページ目以降、S3 公開、テスト 92件通過。
