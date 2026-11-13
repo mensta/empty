@@ -132,29 +132,54 @@ exports.launch = async ({
     return { steps: n, dist };
   };
 
-  // ---- G1: draw N frames with the gate open, take ONE still, close the gate again.
-  // "settleClears" counts gl.clear calls (not game frames): ~8-10 clears per rendered frame, so the default
-  // 40 is roughly 4-5 frames. Temporal effects (PBR: SSAO/SSR reprojection, clouds, exposure) need more
-  // and never become perfectly static - see FINDINGS.md.
-  const captureFrame = async (file, { settleClears = 40, maxMs = 300000, keepOn = false } = {}) => {
+  // ---- image comparison done in a separate blank page (the browser decodes the PNGs; no extra deps)
+  let cmpPage = null;
+  const diffPct = async (bufA, bufB) => {
+    if (!cmpPage) { cmpPage = await browser.newPage(); await cmpPage.goto('about:blank'); }
+    return cmpPage.evaluate(async ([a, b]) => {
+      const load = async (b64) => {
+        const bm = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
+        const c = new OffscreenCanvas(bm.width, bm.height), g = c.getContext('2d'); g.drawImage(bm, 0, 0);
+        return g.getImageData(0, 0, bm.width, bm.height).data;
+      };
+      const A = await load(a), B = await load(b); if (A.length !== B.length) return 100;
+      let n = 0; for (let i = 0; i < A.length; i += 4) if (Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2]) > 24) n++;
+      return 100 * n / (A.length / 4);
+    }, [bufA.toString('base64'), bufB.toString('base64')]);
+  };
+
+  // ---- G1: draw frames with the gate open, take ONE still, close the gate again.
+  // Waiting a fixed number of clears is NOT enough: Minecraft only rebuilds a limited number of chunk
+  // sections per frame, so right after a move the terrain may be missing (seen: a sky-only first frame).
+  // With stable:true (default) we shoot repeatedly until two consecutive shots differ in <= tolPct of the
+  // pixels, and report whether that happened. "settleClears" counts gl.clear calls (~8-10 per game frame).
+  // PBR never becomes fully static (clouds / temporal effects): pass {stableAttempts: 1} there.
+  const captureFrame = async (file, { settleClears = 40, maxMs = 300000, keepOn = false, stable = true, tolPct = 0.5, stableAttempts = 8 } = {}) => {
     const before = await glStats();
-    await page.evaluate(() => window.__gl.reset());
     await render(true);
-    const t = Date.now(); let frames = 0;
-    while (Date.now() - t < maxMs) {
-      const r = await probe(() => window.__gl.frames, null, 60000);
-      if (r !== null && (frames = r) >= settleClears) break;
-      await page.waitForTimeout(250);
+    const t = Date.now(); let prev = null, buf = null, pct = null, attempts = 0, isStable = !stable, clears = 0;
+    while (attempts < (stable ? stableAttempts : 1) && Date.now() - t < maxMs) {
+      attempts++;
+      await page.evaluate(() => window.__gl.reset());
+      const ta = Date.now();
+      while (Date.now() - ta < maxMs) {                 // wait for settleClears fresh clears
+        const r = await probe(() => window.__gl.frames, null, 60000);
+        if (r !== null && (clears = r) >= settleClears) break;
+        await page.waitForTimeout(250);
+      }
+      buf = await page.screenshot({ timeout: shotTimeout });
+      if (!stable) break;
+      if (prev) { pct = await diffPct(prev, buf); if (pct <= tolPct) { isStable = true; break; } }
+      prev = buf;
     }
-    const t1 = Date.now();
-    await page.screenshot({ path: file, timeout: shotTimeout });
+    fs.writeFileSync(file, buf);
     if (!keepOn && !before.on) await render(false);
-    return { file, clears: frames, settleMs: t1 - t, shotMs: Date.now() - t1 };
+    return { file, clears, attempts, stable: isStable, lastDiffPct: pct === null ? null : +pct.toFixed(3), totalMs: Date.now() - t };
   };
 
   // ---- G2: stills along a camera path. pathFn(u) -> [x,y,z,yaw,pitch], u in [0,1]. Resumable: existing files
   // are skipped. Writes manifest.json (poses, timings, reminder that speed in video is not game speed).
-  const captureSequence = async (pathFn, frames, outDir, { prefix = 'f', start = 0, settleClears = 40, chunkQuietMs = 2000, stepMax = 2 } = {}) => {
+  const captureSequence = async (pathFn, frames, outDir, { prefix = 'f', start = 0, settleClears = 40, chunkQuietMs = 2000, stepMax = 2, capOpts = {} } = {}) => {
     fs.mkdirSync(outDir, { recursive: true });
     const manifestFile = path.join(outDir, 'manifest.json');
     const manifest = fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : { note: 'Frames were drawn one at a time on software GL; playback speed is not game speed.', frames: [] };
@@ -164,7 +189,7 @@ exports.launch = async ({
       if (fs.existsSync(file) && manifest.frames.some((m) => m.i === i)) continue;
       const mv = await moveSafe(pose, { stepMax });
       const ch = await waitChunks({ quietMs: chunkQuietMs, minMs: 500, maxMs: 60000 });
-      const cap = await captureFrame(file, { settleClears });
+      const cap = await captureFrame(file, { settleClears, ...capOpts });
       const got = await getState();
       manifest.frames = manifest.frames.filter((m) => m.i !== i).concat([{ i, file: path.basename(file), pose, got, moveSteps: mv.steps, chunksQuiet: ch.quiet, ...cap, file: path.basename(file) }]);
       fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 1));
@@ -173,7 +198,7 @@ exports.launch = async ({
   };
 
   return { browser, page, logs, rawLogs, click, shot, chat, render, glStats, probe, enterWorld, skipFirstRun, getState, setCamera,
-    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence };
+    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, diffPct };
 };
 
 // Camera-path helpers for captureSequence
