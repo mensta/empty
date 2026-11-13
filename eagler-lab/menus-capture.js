@@ -13,6 +13,11 @@ const L = require('./lib.js');
   };
   await skipFirstRun();
   await page.waitForTimeout(3000);
+  if (process.env.SHADERS === '1') {
+    await click(485, 605, 3000); await still('menu-4-options');
+    await click(878, 275, 3500); await still('menu-5-options-shaders');
+    await browser.close(); console.error('DONE'); return;
+  }
   await still('menu-1-title');
   await click(640, 353, 4000);                         // Singleplayer
   await still('menu-2-singleplayer-worldlist');
