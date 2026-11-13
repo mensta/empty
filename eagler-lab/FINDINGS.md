@@ -364,3 +364,48 @@ for the virtual clock, assumed the server would keep real time. Both are now che
   `window.eaglercraftXOpts.zeusCloud.endpoint` is a non-empty string; otherwise it sets `{"status":"disabled"}` and returns. This build's options do not set it:
   `window.__zeusCloud.state` was `{"status":"disabled"}` and no second Worker appeared. What the script would do with an endpoint (its messages are `init`,
   `token`, `cmd`, `state`, `result`) was not run or analysed.
+
+## 16. Three checks against a secondary source: TeaVM version, multiplayer transport, world storage  [static, no third-party server contacted]
+**1. TeaVM version - not stated anywhere in either build.**
+- Searched both builds (JS `main.js`; every decompressed section of the WASM-GC bundle: page HTML, `eagruntime.js`, `classes.wasm`, TeaVM debug blob,
+  helper WASM, loader WASM) for `EAGLER`, `0.9.x`-`0.19.x` style versions and "teavm version" text. **No version string exists.**
+  `EAGLER` appears only in GLSL macros (`EAGLER_IS_GLES_300`, ...: 64 in the JS text, 20 in `classes.wasm`); "TeaVM" appears as class/method names
+  (`TeaVMWebSocketClient`, `immediateContinueTeaVM0`, ...). The credits name TeaVM (Apache-2.0, "Copyright 2014 Alexey Andreev") with no version.
+  The claim "JS 0.9.2-EAGLER / WASM 0.12.1-EAGLER" is therefore **not confirmable from the files**.
+- The only hint is indirect, for the JS build: its runtime uses **13 helper names that exist in TeaVM 0.9.2's `runtime.js` but not in current master**
+  (`$rt_intclsCache`, `$rt_createcls`, `$rt_assertNotNaN`, `$rt_createNumericArray`, `$rt_createArrayFromData`, ...). That fits an older generation (0.9.x-like).
+  The raw match rates (0.9.2: 104/134 = 78%, master: 114/134 = 85%) are not comparable, because 0.9.2 emits the thread/string/exception helpers
+  from the compiler instead of that file. Nothing comparable exists for the WASM-GC build (no JS helper layer to match).
+**2. Multiplayer transport - what static reading supports.**
+- **Direct servers = WebSocket.** `TeaVMWebSocketClient` calls `new WebSocket(url)`, sets `binaryType = "arraybuffer"`, listens for `open`/`close`/`message`/`error`
+  and sends binary frames (`send(frame.data.buffer)`); `WebSocketNetworkManager` carries Minecraft packets over it. Vanilla 1.8 login classes are present
+  (`C00Handshake`, `C00PacketLoginStart`, `S02PacketLoginSuccess`, `S03PacketEnableCompression`, `EnumConnectionState`; encryption classes
+  `S01/C01` exist too, whether they are used was not checked). Connection log strings in order: "Connecting to: {}", "Could not open WebSocket to \"...\"",
+  "Handshake timed out", "Logging in: {}", `connect.authorizing`, "Handshake Failure: Too Many Requests!". A status ping goes through `ServerQueryImpl`
+  (`WebSocketQuery`, results `COMPATIBLE` / `CLIENT_OUTDATED`, with a rate limiter).
+- **Eagler-specific packets (57 class names ending `EAG`)** for skins/capes (`CPacketGetOtherSkinV5EAG`, `SPacketOtherSkinCustomV5EAG`, ...), voice signalling
+  (`CPacketVoiceSignalICEEAG`, `...DescEAG`, `...ConnectEAG`, `SPacketVoiceSignal*`), WebView, notification badges, server cookies
+  (`SPacketSetServerCookieV4EAG`), redirects (`SPacketRedirectClientV4EAG`: "Recieved ..., reconnecting to: {}") and update certificates. Server-side proxy
+  plugins are named in strings (`EaglercraftXBungee`, `EaglercraftXVelocity`, "upgrade to EaglercraftXServer").
+- **Relay = a WebRTC signalling service.** Relay packet classes: `RelayPacket00Handshake`, `01ICEServers` (with `RelayServer`/`RelayType`), `02NewClient`,
+  `03ICECandidate`, `04Description`, `05ClientSuccess`, `06ClientFailure`, `07LocalWorlds`, `69Pong`, `70SpecialUpdate`, `FEDisconnectClient`, `FFErrorCode`, plus
+  `RelayManager`, `RelayServerSocket`, `RelayQuery` (with a rate limiter and a version-mismatch result). ICE candidates and session descriptions are what WebRTC
+  peers exchange; the game data then travels on WebRTC data channels (`PlatformWebRTC$LANPeer`, `LANPeerEvent$LANPeerDataChannelEvent`/`DescriptionEvent`/
+  `ICECandidateEvent`, `LANClientNetworkManager`). That the relay only introduces the peers is an inference from these names; the traffic was not observed. Voice uses
+  the same signalling idea (`VoiceClientController`, microphone via `getUserMedia`). Two relay addresses are in the build: `wss://relay.eaglercraft.net/` (launch
+  options) and `wss://relay.deev.is/` (a string in the program).
+- **"Browsers have no raw TCP, so WebSocket"**: the build agrees in the sense that its only socket-like transports are WebSocket and WebRTC data channels (plus
+  `fetch`/XHR); the statement about browsers having no raw TCP is a platform fact the build cannot show. **Not determinable by reading strings**: the bytes of the
+  first handshake frame (they are numeric constants in code). Nothing was sent to any server.
+**3. World storage - the secondary source is half right.**
+- Worlds are stored in **IndexedDB** (`IndexedDBFilesystem`, `EaglerSaveFormat`, `EaglerSaveHandler`; section 13). **EPK is the export/import file format**, not
+  the storage. Menus (from `en_US.lang` and the code): select-world **Backup** -> "World Backup Menu" with **Export EPK File** ("Download this world as a compressed
+  .epk file"), **Convert to Vanilla** ("Download this world as a vanilla 1.8 world"), Duplicate World, Re-Create World (same seed), Delete Player Data; creating a world
+  offers **Load EPK File** ("Load an Eaglercraft .epk world file") and **Import Vanilla World** ("Load a vanilla minecraft 1.8 world", reads `region/*.mca`, `DIM1/region/`).
+- The same container carries a type tag: world EPKs are `epk/world188` and `epk/world152`, the asset/resource pack is `epk/resources`; the parser rejects other
+  types ("EPK is not of file-type 'epk/resources'!") and checks an end-of-file code (`:::YEE:>`), the `END$` object and the version identifier (`u53`). Code:
+  `EPKCompiler`, `EPKDecompiler`, `EPKLoader`, `GuiScreenBackupWorldSelection`, `GuiScreenNameWorldImport`, `IPCPacket07ImportWorld`.
+- Profile and settings can also be exported/imported (as EPK: "Could not compile EPK"); resource packs import from ZIP.
+- **Also present, not exercised: cloud saves.** Class names `CloudSaves` with flows `OpenFlow`, `LinkFlow`, `DownloadFlow`, `HistoryFlow`, `TrashFlow`, `DeleteFlow`,
+  `MenuFlow` and a `Transport`. It has no endpoint in this build (the dormant `zeus cloud` worker, section 15, is the likely transport - an inference from
+  the names, not tested).
