@@ -48,3 +48,22 @@ Outcome of the 2024/2025 notices (what was actually removed) was not verified.
 3. lax1dude's own public statements (primary posts) — not reachable via this search tool.
 4. Current legal status/any court action; Mojang's stated policy toward browser ports.
 5. Who owns/operates eaglercraft.com and cdn.eaglercraft.net, and how the 2026 downloads relate to the earlier removed repos.
+
+## X (Twitter) investigation — relayed from the video session (not re-checked by me)
+Reported by session `session_01868jCY66AR8bTz9BaEi3cv`, read-only, 2026-11-13. Full note lives in the
+private repo `mensta/mv-studio`, branch `claude/eagler-explainer-plan`,
+`projects/eagler/docs/history-x-notes.md` (commit f710ff8). I have NOT opened that file; this is the
+session's own summary of it. The session itself says the search was unstable and not exhaustive.
+- No post could be confirmed as written by lax1dude or ayunami2000. `@LAX1DUDE` and `@ayunami2000`
+  showed 0 posts and cannot be called the people themselves **[unverified]**; `@lax1dude67` looks unrelated.
+- No Mojang / Microsoft / Minecraft official-account post mentioning Eaglercraft turned up
+  (an empty search result does not prove none exists).
+- No first-hand post about the 2023 Discord / GitLab closures. One third-party post, `@uwunetes`
+  2023-05-20, says they hosted a source archive, received a Mojang DMCA and would comply
+  **[hearsay — not usable as fact]**.
+- A German-language news article about the DMCA was shared on X on 2023-02-25 (only corroborates that
+  the 2023-02 reporting existed). No lead on community events (shutdowns, revivals, moves).
+- A third party's 2022 reply says it runs on TeaVM — hearsay; the build itself already shows this
+  (see FINDINGS.md §5).
+- Net result: **nothing from X is usable as a stated fact in the video.** Primary sources remain the
+  GitHub DMCA notice originals and the project's own pages.
