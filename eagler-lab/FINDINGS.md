@@ -61,7 +61,8 @@ No music tracks are present (the game logs "File ... does not exist" for each) �
   (Turning it on is covered in "R9" below.) The game's own log confirms the bit reading: the deferred
   pipeline logs lines like `Compiling program for core state: 1 4 16 64, ext state: 8`
   (= TEXTURE_ATTRIB, NORMAL_ATTRIB, ENABLE_TEXTURE2D, ENABLE_ALPHA_TEST).
-  Not read: the state-tracking code that decides which bits to set (the GL-call side before `C3n`).
+  The bits are decided in two places (read from the code, section 12): attribute bits from the vertex
+  format being drawn, state bits computed on demand from current GL state.
 - Shader sources carry `Copyright (c) 2022-2024 lax1dude` — they are the project's own code,
   not Mojang's. [verified]
 
@@ -135,7 +136,7 @@ The server logs `Can't keep up! ... skipping N tick(s)` when the CPU is starved 
   Working explanation (not measured): per-packet displacement limit (~10 blocks in vanilla).
 
 ## 8. Not done / unverified
-- Java-side state tracking that chooses the `C3n` bitmask (the GL-call side) not read; the bitmask -> compile step is read.
+- Remaining in the GL layer: exactly where bit 512 (anisotropic fix) is set (not by the state function; never seen in our runs), and the immediate-mode path.
 - [research] "LWJGL rewritten for WebGL" — not checked in code.
 - Multiplayer path: the launch options list a shared-world relay (`wss://relay.eaglercraft.net/`);
   the WebSocket proxy path described in research was not exercised.
@@ -207,3 +208,50 @@ structure is one thing; showing assets at length or pointing to a download is th
   0; consecutive-frame difference 13.7% (terrain 24.9%), no outlier. Extrapolation: 30 frames (1 s) ~ 26-32 min,
   90 frames (3 s) ~ 1.5-1.8 h. Small sample; the warm-up pass under PBR took 90 s and never reported quiet.
 - Everything here is software GL (SwiftShader). Playback speed is set by the chosen fps, not by the real game.
+
+## 12. Inside the GL emulation layer and the platform layer  [verified by reading `main.js`; names minified]
+**How a draw call becomes a shader variant (R4, closed except bit 512).**
+- A draw (minified `FEW(listId)`, a `glCallList`-style call) builds `key = formatBits | Grn()`:
+  * **bits 1/2/4/8 = vertex attributes present in the recorded vertex format**: texcoord, colour, normal,
+    lightmap (`format.rE & 1 -> attribute 1`, `& 2 -> 2`, `& 4`, `& 8`).
+  * **`Grn()` = state bits, computed on every call from current GL state**: 16 = texture unit 0 enabled,
+    32 = texture unit 1 (lightmap) enabled, 64 = alpha test, 128 = lighting enabled and the MC light state,
+    256 = texture unit 0 enabled and texgen, 1024 = fog enabled and density > 0, 2048 = additive colour blend.
+- `key` indexes a **flat array cache of 4096 entries**; a miss calls the compiler `C3n(key, ...)` (section 4) and stores the
+  program. With the deferred (PBR) pipeline a second function (`Gv$`) keeps a cache keyed by
+  `key & (15 | extensionStateMask)` plus the extension state, so bits that cannot matter for a given
+  extension state do not create duplicate variants. The game logs this as
+  `Compiling program for core state: <bits> , ext state: <bits>` (`DeferredGBufferPipelineCompiler`).
+- Bit 512 (`ENABLE_ANISOTROPIC_FIX`) is **not** produced by `Grn()` and was never seen in any run; the shader comment
+  says it works around Direct3D 11 + nearest filtering + anisotropy. Hypothesis (unverified): it is only set on a D3D backend.
+
+**It re-implements legacy OpenGL semantics in Java over WebGL (R5, graphics part).**
+- Display lists: `glNewList` accepts only `GL_COMPILE` (4864), one list at a time ("A display list is already being
+  compiled you eagler!"), one vertex format and one draw mode per list, no re-rendering of the same vertices while
+  recording; calling or flushing an unknown list is an error. Immediate mode exists as an `IMMEDIATE` draw path.
+- Only a subset of GL is honoured, with explicit complaints otherwise: `glGetInteger` only for `GL_VIEWPORT`, `glFog`
+  only `GL_FOG_COLOR`. "Skipping draw call with emulated VAO because no known VAO is bound!" - vertex array objects
+  have three paths: WebGL2 `bindVertexArray`, the `OES_vertex_array_object` extension, or a fully emulated VAO.
+- WebGL1 (GLES 2.00) and WebGL2 (GLES 3.00) share shader source through the `EAGLER_*` macros (`gles2_compat.glsl`).
+
+**Platform layer (R5, non-graphics part): DOM APIs used directly; no LWJGL classes in this build.**
+Counts are references in the generated JS:
+| area | APIs referenced |
+|---|---|
+| input | keydown 7, keyup 5, mousedown/up 2, mousemove 2, wheel 2, pointer lock (`requestPointerLock` 5, `pointerlockchange`), touch (5), Gamepad (`getGamepads` 5), fullscreen, clipboard, plus a keyboard-layout query ("Loading keyboard layout data", "KeyboardLayoutMap remapped N keys") and a focus guard ("Detected mouse input while the window was not focused...") |
+| audio | Web Audio: `AudioContext` 3, `createBufferSource` 3, `createPanner` 2, `createGain` 8, `decodeAudioData` 2; microphone `getUserMedia` 5 (voice) |
+| storage | IndexedDB (`indexedDB` 11, `createObjectStore` 3, `openCursor` 2) and `localStorage` 19 |
+| network | `WebSocket` 4, `RTCPeerConnection` 6 + `createDataChannel` 2 (peer-to-peer), `fetch` 12, `XMLHttpRequest` 5 |
+| time / yield | `performance.now` **2 call sites**, `requestAnimationFrame` 2, `MessageChannel` 11, `postMessage` 25, `setTimeout` 63 |
+| media | `MediaRecorder` 5 / `captureStream` 3 (screen recording), `createObjectURL` 7 |
+- The strings `LWJGL` and `LWJGL3` are only (a) a crash-report "System Details" label and (b) a platform-enum value next to
+  `DESKTOP`/`CHROME`/`EDGE`/`IE`: the code base has a desktop LWJGL3 backend as well as the browser one, selected through a
+  platform abstraction. The research claim "LWJGL was rewritten for WebGL" is therefore **not what this build shows**: the
+  browser build replaces LWJGL with its own platform classes + the GL emulation above. Whether those classes mimic
+  LWJGL's API shapes cannot be told here (class names are stripped, no `org.lwjgl` string).
+- **Threads**: the integrated server runs in a Web Worker started from a Blob URL (`WorkerMain: eaglercraftx worker thread
+  is starting...`, CSP string `worker-src data: blob:`). TeaVM "yield" (section 5) is implemented with
+  `MessageChannel` posts ("fast immediate continue") to dodge the browser's minimum `setTimeout` delay, with fallbacks to
+  `window.postMessage` and `setTimeout` (log strings name each fallback). This is why a single JS thread can run
+  Java-style blocking code.
+- The two `performance.now` call sites match the virtual-clock result in section 11 (only that clock matters).
