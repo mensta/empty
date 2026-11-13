@@ -30,9 +30,18 @@ Env: `EAGLER_HTML` (patched copy), `EAGLER_SHOTS` (output dir), `EAGLER_LOG` (fu
 | `waitChunks()` | heuristic: no buffer uploads for a while. **Not sufficient alone** |
 | `captureFrame(file, opts)` | open the gate, draw frames, shoot until two consecutive stills match, close the gate |
 | `captureSequence(pathFn, n, dir, opts)` | stills along a camera path; resumable; writes `manifest.json` |
+| `vtEnable()` / `vtStep(ms)` / `vtDisable()` | virtual game clock: advance it a little, let the game run a frame (see FINDINGS section 11) |
+| `captureVideoFrames(pathFn, n, dir, {fps})` | one still per frame with the virtual clock advanced 1/fps each; refuses paths > 4 blocks/frame |
 | `hideHud()` / `dismissHints()` / `setResolution(w,h)` | F1, remove the "Press E" toast, resize the viewport (1920x1080 tested) |
 | `rawLogs` + `EAGLER_LOG` | every console line, never filtered, with ISO ms timestamp and ms since page start |
 | `paths.orbit(...)`, `paths.line(a,b)` | camera-path helpers |
+
+## Making a video
+```bash
+PBR=0 FRAMES=90 FPS=30 EAGLER_HTML=... EAGLER_SHOTS=/path/out node video-test.js     # frames -> /path/out/video-plain/v-00000.png ...
+./make-video.sh /path/out/video-plain /path/out/clip.mp4 30 v- 16                    # 30 fps, yuv420p, crf 16
+```
+Frames and video stay outside the repo. Plain: ~3.6 s per frame. PBR: ~52 s per frame (4-frame sample).
 
 ## Things that will bite you
 - **Speed is not game speed.** Frames are drawn one at a time on software GL (~15 fps plain, ~1 fps with the

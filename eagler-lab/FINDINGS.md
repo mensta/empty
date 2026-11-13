@@ -181,3 +181,29 @@ structure is one thing; showing assets at length or pointing to a download is th
   warm pass took ~6 min; a 1920x1080 still ~40 s. PBR stills take 100+ s each.
 - **Server-accepted camera moves**: a 5-frame orbit (18 sub-steps of <= 2 blocks per leg, 120 ms apart)
   was accepted at every frame; the server's own position (`/tp @p ~ ~ ~`) matched the client's.
+
+## 11. Frame-by-frame video capture (virtual game time)  [verified, one machine]
+- **The game reads `performance.now()`** for its timer (about 280 reads/s); `Date.now()` was read **0** times in
+  3 s. Replacing `performance.now` with a clock the capture script controls (`gl-gate.js`, `__vt`) is enough.
+- **Client time follows the virtual clock exactly**: real clock 3 s -> +60 client ticks (20 TPS); virtual clock
+  held 3 s of wall time -> **+0** ticks; advancing 1.000 virtual second in **15, 30 or 60 steps -> +20 ticks each
+  time**. So client-side animation (clouds, water/lava textures, particles, client ticks) advances per virtual
+  second regardless of how many frames are drawn. In a 3-virtual-second check the sky (clouds) changed 1.44%
+  and the terrain 0.00%. Holding the clock for 20 s of wall time caused no disconnect/timeout line; releasing it
+  gave +55 ticks in 3 s (back to ~20 TPS).
+- **Limits**: the integrated server runs in a Worker with its own real clock and is NOT virtualised. Mobs,
+  world time and weather are server-driven, so freeze them (`freezeWorld`) - and run it again after `warmPath`:
+  chunks generated later bring new animals (sheep appeared on far hills in the test clip). The game timer caps
+  catch-up at 10 ticks per frame, so advance the clock in small steps (one `vtStep` per video frame) rather than jumping.
+- **Server acceptance of camera moves** is judged per client packet and client ticks only run when the clock
+  advances, so `captureVideoFrames` refuses paths that move more than 4 blocks per frame.
+- **Test clip (plain, no PBR)**: seed `eagler`, 1280x720, noon, clear, HUD hidden, quarter orbit (about 39 blocks,
+  ~13 blocks/s) around a point 25 blocks ahead of [100.5, 100, 200.5], **90 frames at 30 fps = 3.000 s**
+  (ffmpeg libx264 crf 16, yuv420p; 4.76 MB). Capture took **326 s = 3.6 s/frame** (median 3.4 s, max 6.2 s),
+  0 pose mismatches, 0 disconnect lines. Consecutive frames differ in 15.9% of pixels on average (min 14.6, max 16.9;
+  terrain-only 28.6%) with **no outlier frame**, i.e. no flicker or terrain popping; that difference is the
+  camera turning about 1 degree per frame.
+- **PBR estimate (4 frames only)**: 208 s for 4 frames = **52 s/frame mean** (median 65 s, max 70 s); pose mismatches
+  0; consecutive-frame difference 13.7% (terrain 24.9%), no outlier. Extrapolation: 30 frames (1 s) ~ 26-32 min,
+  90 frames (3 s) ~ 1.5-1.8 h. Small sample; the warm-up pass under PBR took 90 s and never reported quiet.
+- Everything here is software GL (SwiftShader). Playback speed is set by the chosen fps, not by the real game.

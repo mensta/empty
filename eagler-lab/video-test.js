@@ -16,9 +16,9 @@ const PBR = process.env.PBR === '1', FRAMES = +(process.env.FRAMES || 90), FPS =
   await freezeWorld({ time: 6000 }); await dismissHints(); await hideHud();
   const POSE = [100.5, 100, 200.5, 45, 10];
   await teleport(...POSE);
-  // quarter orbit around a point 25 blocks ahead: ~39 blocks over the clip
+  // orbit around a point 25 blocks ahead: a quarter turn (~39 blocks) in 90 frames
   const cx = 100.5 - 25 * Math.sin(Math.PI / 4), cz = 200.5 + 25 * Math.cos(Math.PI / 4);
-  const path = L.paths.orbit(cx, 100, cz, 25, 10, 0.25, 45);
+  const path = L.paths.orbit(cx, 100, cz, 25, 10, 0.25 * FRAMES / 90, 45);   // same speed per frame whatever FRAMES is
   console.error(tag, 'warm', JSON.stringify(await warmPath(path, 8, { dwellMs: 8000 })));
   await setCamera(...path(0));
   const dir = `${OUT}/video-${tag}`; fs.rmSync(dir, { recursive: true, force: true });
