@@ -4,22 +4,25 @@
 const L = require('./lib.js');
 const fs = require('fs');
 const PBR = process.env.PBR === '1', FRAMES = +(process.env.FRAMES || 90), FPS = +(process.env.FPS || 30);
+// RES=1920x1080 switches the viewport after the world is entered (menu clicks are measured at 1280x720); STOPS = warm-up stops along the path
+const RES = (process.env.RES || '').split('x').map(Number), STOPS = +(process.env.STOPS || 8);
 (async () => {
   const OUT = process.env.EAGLER_SHOTS;
   const lib = await L.launch({ shotTimeout: 240000, logFile: OUT + '/video-console.log' });
-  const { browser, page, click, render, skipFirstRun, enterWorld, freezeWorld, dismissHints, hideHud, teleport, warmPath, setCamera, getState, waitChunks, captureVideoFrames, diffPct, chat, rawLogs } = lib;
-  const tag = PBR ? 'pbr' : 'plain';
+  const { browser, page, click, render, skipFirstRun, enterWorld, freezeWorld, dismissHints, hideHud, teleport, warmPath, setCamera, getState, waitChunks, captureVideoFrames, diffPct, chat, rawLogs, setResolution } = lib;
+  const tag = (PBR ? 'pbr' : 'plain') + (process.env.TAG ? '-' + process.env.TAG : '');
   await skipFirstRun();
   if (PBR) { await click(485, 605, 3000); await click(878, 275, 3500); await click(400, 659, 2500); await click(878, 659, 12000); await click(640, 653, 4000); }
   await render(false);
   await enterWorld('eagler', { first: false });
   await freezeWorld({ time: 6000 }); await dismissHints(); await hideHud();
+  if (RES.length === 2) await setResolution(RES[0], RES[1]);
   const POSE = [100.5, 100, 200.5, 45, 10];
   await teleport(...POSE);
   // orbit around a point 25 blocks ahead: a quarter turn (~39 blocks) in 90 frames
   const cx = 100.5 - 25 * Math.sin(Math.PI / 4), cz = 200.5 + 25 * Math.cos(Math.PI / 4);
   const path = L.paths.orbit(cx, 100, cz, 25, 10, 0.25 * FRAMES / 90, 45);   // same speed per frame whatever FRAMES is
-  console.error(tag, 'warm', JSON.stringify(await warmPath(path, 8, { dwellMs: 8000 })));
+  console.error(tag, 'warm', JSON.stringify(await warmPath(path, STOPS, { dwellMs: 8000 })));
   await setCamera(...path(0));
   const dir = `${OUT}/video-${tag}`; fs.rmSync(dir, { recursive: true, force: true });
   const t0 = Date.now();
