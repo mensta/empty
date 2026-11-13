@@ -148,3 +148,28 @@ structure is one thing; showing assets at length or pointing to a download is th
 ## Reproduce
 `EAGLER_HTML=<path to html> node eagler-lab/<script>.js` (needs Playwright + Chromium).
 `python3 -I eagler-lab/parse-epk.py <decompressed-epk> <out.json>` lists the pack.
+
+## 10. Capture toolkit findings  [verified]
+- **Full pack catalogue (R7 closed)**: `extract-build.py` reads all **4872** entries, **18,853,633** data
+  bytes, **0 CRC mismatches**; folder totals add up exactly. Largest: lang 75 files / 7.6 MB, sounds 537 /
+  4.2 MB, textures 1059 / 3.3 MB, `eagler/glsl` 291 / 0.82 MB, models 1595 / 0.75 MB, `eagler/mesh` 26 /
+  0.61 MB, blockstates 340 / 0.25 MB, `eagler/icudt` 4 / 0.25 MB, `relay_download.zip` 0.24 MB. By
+  extension: json 1948, png 1917, ogg 537, ebp 192, lang 75, fsh 53, vsh 22, glsl 4, properties 37.
+- **Where the HTML's bytes go** (`parts.json`): 34.9 MB file = launch-options script + 22.6 MB TeaVM
+  program + 12.27 M base64 chars (-> 9.2 MB EPK -> 19.2 MB after gunzip).
+- **Console log**: attaching the listener before `goto` and writing every line gives ~240-260 lines for
+  start + world creation, first line at ~1.4 s after navigation; the 41 "File ... does not exist" (no music)
+  and 39 OptiFine lines are kept.
+- **Hook discovery** (`patch-hook.js`): found entry `HjT`, constructor `BC3`, singleton `HRd` from the
+  "Setting user: " pool string alone; output is byte-identical to the hand-patched copy.
+- **Chunk streaming vs. screenshots**: at a pose reached by `/tp`, a stable-looking still showed only the
+  nearest hill; the same pose after flying the route showed far hills, trees and fog. The terrain-only
+  difference between a frame and a later frame at the same pose is **0.000%** once the route has been warmed;
+  the remaining ~2.7% of the whole image is cloud drift. `waitChunks` (no `bufferData` for 3 s) returned
+  "quiet" too early, so it is only a hint.
+- **Earlier PBR on/off stills** were taken before this was understood and likely show a partially loaded
+  world; they are superseded by the re-shot set (same pose, warmed route).
+- **Capture cost**: a plain still takes ~2-15 s per attempt, usually 2-5 attempts; a 5-frame orbit with a
+  warm pass took ~6 min; a 1920x1080 still ~40 s. PBR stills take 100+ s each.
+- **Server-accepted camera moves**: a 5-frame orbit (18 sub-steps of <= 2 blocks per leg, 120 ms apart)
+  was accepted at every frame; the server's own position (`/tp @p ~ ~ ~`) matched the client's.
