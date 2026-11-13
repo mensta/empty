@@ -41,6 +41,13 @@
     } catch (e) { /* never break the game */ }
     return oSrc.apply(this, arguments);
   };
+  // Buffer uploads (chunk mesh rebuilds etc.): used by waitChunks() to detect "nothing more is loading".
+  // These are NOT gated: the game keeps building chunks while drawing is off.
+  st.uploads = 0; st.lastUpload = 0;
+  for (const name of ['bufferData', 'bufferSubData']) {
+    const o = proto[name];
+    proto[name] = function () { st.uploads++; st.lastUpload = performance.now(); return o.apply(this, arguments); };
+  }
   // WebGL extensions the game asks for (R9)
   st.extensions = [];
   const oExt = proto.getExtension;
