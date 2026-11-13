@@ -67,3 +67,19 @@ session's own summary of it. The session itself says the search was unstable and
   (see FINDINGS.md §5).
 - Net result: **nothing from X is usable as a stated fact in the video.** Primary sources remain the
   GitHub DMCA notice originals and the project's own pages.
+
+## Rights material gathered for the video (R3) - facts only, no legal judgement
+- **The project's own CREDITS.txt** (inside the build; see FINDINGS.md section 13) never mentions Mojang and contains no licence or
+  permission from Mojang/Microsoft; it says OptiFine portions were "borrowed ... without the author's permission"; it lists 34
+  third-party projects with their licences (TeaVM Apache-2.0, LWJGL 3 BSD-style as a desktop debug aid, etc.).
+- **Site legal page** (eaglercraft.com/legal, read directly): "independent project, not affiliated with or endorsed by Mojang or
+  Microsoft"; links to community versions "for educational purposes"; "We do not host games on our servers"; ToS says the site
+  "exists for educational and archival purposes". The offline zips were served from `cdn.eaglercraft.net`; owner not checked.
+- **Mojang's "Minecraft Usage Guidelines for Fans and Creators"**: the page returned HTTP 503 on two direct fetches, so it was NOT
+  read. A web-search summary (unverified) says: gameplay videos/streams may earn ad revenue under conditions (full video freely
+  viewable, meaningful original commentary/content, no selling copies, sponsor call-outs outside the footage); commercial use of
+  Mojang assets is otherwise prohibited; products must say they are not official/not approved by Mojang or Microsoft; companies
+  and organisations promoting unrelated brands need written approval; approved Mojang tracks only for music. **Re-read the live
+  page before relying on any of this**, and note that these guidelines are about footage of the real game: whether footage of
+  an unofficial recreation falls under them is not something any text gathered here answers.
+- Mojang EULA: not read.
