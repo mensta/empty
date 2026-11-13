@@ -134,18 +134,31 @@ exports.launch = async ({
 
   // ---- image comparison done in a separate blank page (the browser decodes the PNGs; no extra deps)
   let cmpPage = null;
-  const diffPct = async (bufA, bufB) => {
+  const diffPct = async (bufA, bufB, region = [0, 1]) => {
     if (!cmpPage) { cmpPage = await browser.newPage(); await cmpPage.goto('about:blank'); }
-    return cmpPage.evaluate(async ([a, b]) => {
+    return cmpPage.evaluate(async ([a, b, region]) => {
       const load = async (b64) => {
         const bm = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
         const c = new OffscreenCanvas(bm.width, bm.height), g = c.getContext('2d'); g.drawImage(bm, 0, 0);
         return g.getImageData(0, 0, bm.width, bm.height).data;
       };
       const A = await load(a), B = await load(b); if (A.length !== B.length) return 100;
-      let n = 0; for (let i = 0; i < A.length; i += 4) if (Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2]) > 24) n++;
-      return 100 * n / (A.length / 4);
-    }, [bufA.toString('base64'), bufB.toString('base64')]);
+      const px = A.length / 4, from = Math.floor(px * region[0]), to = Math.floor(px * region[1]);
+      let n = 0; for (let p = from; p < to; p++) { const i = p * 4; if (Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2]) > 24) n++; }
+      return 100 * n / Math.max(1, to - from);
+    }, [bufA.toString('base64'), bufB.toString('base64'), region]);
+  };
+
+  // ---- warmPath: the integrated server only generates/sends chunks around where the player is, and JS world
+  // generation is slow, so a still image can be "stable" while distant terrain is simply not there yet
+  // (seen: first frame = one hill, last frame at the same pose = hills, trees, fog). Visit the whole route
+  // once with the draw gate OFF (fast frames) and dwell at each stop; then capture.
+  const warmPath = async (pathFn, stops = 8, { dwellMs = 8000, stepMax = 2 } = {}) => {
+    const wasOn = (await glStats()).on; await render(false);
+    for (let i = 0; i < stops; i++) { await moveSafe(pathFn(stops > 1 ? i / (stops - 1) : 0), { stepMax }); await page.waitForTimeout(dwellMs); }
+    const w = await waitChunks({ quietMs: 4000, minMs: 1000, maxMs: 90000 });
+    if (wasOn) await render(true);
+    return w;
   };
 
   // ---- G1: draw frames with the gate open, take ONE still, close the gate again.
@@ -154,7 +167,7 @@ exports.launch = async ({
   // With stable:true (default) we shoot repeatedly until two consecutive shots differ in <= tolPct of the
   // pixels, and report whether that happened. "settleClears" counts gl.clear calls (~8-10 per game frame).
   // PBR never becomes fully static (clouds / temporal effects): pass {stableAttempts: 1} there.
-  const captureFrame = async (file, { settleClears = 40, maxMs = 300000, keepOn = false, stable = true, tolPct = 0.5, stableAttempts = 8 } = {}) => {
+  const captureFrame = async (file, { settleClears = 40, maxMs = 300000, keepOn = false, stable = true, tolPct = 1.0, stableAttempts = 5 } = {}) => {
     const before = await glStats();
     await render(true);
     const t = Date.now(); let prev = null, buf = null, pct = null, attempts = 0, isStable = !stable, clears = 0;
@@ -198,7 +211,7 @@ exports.launch = async ({
   };
 
   return { browser, page, logs, rawLogs, click, shot, chat, render, glStats, probe, enterWorld, skipFirstRun, getState, setCamera,
-    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, diffPct };
+    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, warmPath, diffPct };
 };
 
 // Camera-path helpers for captureSequence
