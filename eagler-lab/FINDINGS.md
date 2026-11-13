@@ -255,3 +255,61 @@ Counts are references in the generated JS:
   `window.postMessage` and `setTimeout` (log strings name each fallback). This is why a single JS thread can run
   Java-style blocking code.
 - The two `performance.now` call sites match the virtual-clock result in section 11 (only that clock matters).
+
+## 13. Startup, memory, browser storage, multiplayer plumbing, and what the project says about itself  [verified unless marked]
+**Startup timeline (R8)** - one run, software GL, from the game's own timestamps (`raw-console.log`); first console line comes
+~1.4 s after navigation (parsing/compiling the 35 MB page).
+| step | time since first game log line |
+|---|---|
+| runtime init -> canvas -> WebGL context | +0.20 s -> +0.21 s -> +0.25 s |
+| embedded EPK taken out of the data URI | +0.42 s; the next log line (decompress) at +1.60 s, i.e. **~1.2 s** for the base64 -> bytes step |
+| pack unpacked, **4872 resources** loaded | +2.03 s |
+| filesystem, sound engine, platform ready | +2.09 s, +2.09 s, +2.18 s |
+| client thread started, user set | +2.35 s |
+| resource-manager reload -> texture atlas created | +4.03 s -> +8.30 s (the 4.3 s includes software-GL texture work) |
+(The integrated-server boot line comes ~35 s later in that log only because the script was clicking through menus.)
+**JS heap** (Chromium `Performance.getMetrics`): **363 MB** right after load, **113 MB** at the title screen (the 35 MB page
+string and the decoded pack are freed), **149 MB** in a freshly created world. DOM nodes 1622 -> 203.
+
+**Where saves live (R10).** Two IndexedDB databases named `_net_lax1dude_eaglercraft_v1_8_internal_PlatformFilesystem_1_8_8_worlds`
+and `..._resourcePacks`; each has ONE object store `filesystem` with key path `path`. A virtual file system: after creating one
+world the `worlds` store held **90 entries, ~339 KB**; `resourcePacks` was empty. `localStorage` holds three keys
+(`_eaglercraftX.g`, `_eaglercraftX.relays`, `_eaglercraftX.p`; by name: settings, relay list, profile - contents not read).
+Browser quota reported 4.3 GB, usage 0.5 MB. The launch option `worldsDB` names the database; `ramdiskMode` (see below) would keep it in memory.
+
+**Launch options (the page may set `window.eaglercraftXOpts`)** - ~45 keys are read, among them `container`, `worldsDB`,
+`relays`, `joinServer`, `joinWorld`, `joinWorldRelay`, `demoMode`, `lang`, `allowVoiceClient`, `singleThreadMode` (no worker),
+`ramdiskMode`, `eaglerNoDelay`, `forceWebGL1`, `forceWebGL2`, `allowExperimentalWebGL1`, `useWebGLExt`, `useJOrbisAudioDecoder`,
+`useXHRFetch`, `deobfStackTraces`, `checkGLErrors`, `checkShaderGLErrors`, `showBootMenuOnLaunch`, `allowBootMenu`,
+`enableEPKVersionCheck`, `localStorageNamespace`. This build sets only `container`, `worldsDB` and one relay.
+
+**Multiplayer plumbing (R6, static only - no third-party server was contacted).** The launch options list one shared-world relay
+(`wss://relay.eaglercraft.net/`, "Eaglercraft Shared World Relay"; `Default Relay #`, `checkRelaysForUpdates`). Strings show the
+peer-to-peer LAN-world path (`eagler-p2p-lan:`, `/lan/join`, `lanServer.relayDisconnected`, "This is an EaglercraftX 1.8 LAN
+world!") on top of `RTCPeerConnection`/`createDataChannel`; direct servers use `ws://`/`wss://` plus a server-side proxy plugin
+(names present: `EaglercraftXBungee`, `EaglercraftXVelocity`, "upgrade to EaglercraftXServer"). Not exercised: the actual
+handshake, the relay protocol, or voice.
+
+**Audio (R12, partly).** 537 `.ogg` effects in the pack (no music), Web Audio nodes (BufferSource, Panner, Gain,
+`decodeAudioData`), and a Java Ogg decoder (JOrbis) selected by `useJOrbisAudioDecoder` / used "in browsers that don't
+support OGG" (per the project's credits).
+
+**What the project says about itself (primary: `assets/eagler/CREDITS.txt` inside the build, 979 lines)** - quoted from its
+own text; these are the authors' statements, not independently checked.
+- *lax1dude*: "Creator of Eaglercraft; Ported the Minecraft 1.8 src to TeaVM; Optimized the Minecraft 1.8 src; **Made the platform
+  abstraction layer; Made HW accelerated OpenGL 1.3 emulator**; Made the default shader pack; Made the integrated PBR resource
+  pack; Added touch and mobile device support; Made the multiplayer backends; Made the shared world relay server; Made the patch
+  and build system". *ayunami2000*: bug fixes, WebRTC shared worlds, WebRTC voice chat, touch support, velocity plugin, resource
+  packs, screen recording, seamless fullscreen, "Created the replit". *cire3*: Gradle plugin, Kotlin DSL.
+- **LWJGL 3 is listed as "OpenGL, OpenAL, and GLFW bindings in desktop debug runtime"** (and ANGLE as "OpenGL ES 3.0 emulation in
+  desktop debug runtime"): it is a desktop development aid, not what the browser build runs on. This settles R5: the browser build
+  uses the project's own platform abstraction layer + its OpenGL 1.3 emulator; the research claim "LWJGL was rewritten for
+  WebGL" is not what the project itself says.
+- **34 third-party projects are listed**, e.g. TeaVM ("Compiling Java to JS, JRE implementation"), JOML (renderer maths),
+  NVIDIA FXAA, Alfheim (lighting engine), Netty (`ByteBuf` classes for the 1.8 networking), Bouncy Castle (MD5/SHA/AES), JZlib
+  (deflate/gzip), a debloated ICU4J (Arabic/Hebrew reordering), JOrbis, fix-webm-duration (screen recordings), Emscripten and XZ
+  (the WASM runtime's loader/decompression), Google Guava and Apache Commons (Minecraft 1.8 dependencies).
+- **OptiFine (1.8.9_HD_U_M6): "A few, limited portions we 'borrowed' without the author's permission"** - the project's own wording.
+- The credits text never uses the word "Mojang" (0 occurrences; "Minecraft" 5). It contains no licence or permission
+  statement from Mojang/Microsoft.
+- `EPKVersionIdentifier.txt` in the pack contains `u53`, i.e. the "u53" in "EaglercraftX 1.8-u53" is the pack's update number.
