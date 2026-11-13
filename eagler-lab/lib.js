@@ -18,12 +18,15 @@ exports.launch = async ({
   viewport = { width: 1280, height: 720 }, shotTimeout = 30000,
   logFile = process.env.EAGLER_LOG || null,            // G3: full, timestamped, never filtered
   beforeGoto = null,                                   // async (page) => {...}: attach listeners before the page loads
+  recordVideo = null,                                  // {dir, size:{width,height}}: Playwright screen recording of the real run
+  skipCountdown = true,                                // false: return right after goto (caller records the page-load itself)
 } = {}) => {
   if (!html) throw new Error('set EAGLER_HTML to the Eaglercraft html path');
   const browser = await chromium.launch({
     args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
   });
-  const page = await browser.newPage({ viewport });
+  const context = await browser.newContext({ viewport, ...(recordVideo ? { recordVideo } : {}) });
+  const page = await context.newPage();
 
   // ---- G3: raw console log. Attached BEFORE goto, so the very first line is kept; no line is dropped
   //      or truncated; each line carries wall-clock ms (ISO) and ms since attach. `logs` keeps the old
@@ -42,9 +45,12 @@ exports.launch = async ({
 
   if (beforeGoto) await beforeGoto(page);
   if (gate) await page.addInitScript(GATE);
+  const tGoto = Date.now() - t0;
   await page.goto('file://' + html);
-  await page.click('#skipCountdown');
-  await page.waitForTimeout(9000);
+  if (skipCountdown) {
+    await page.click('#skipCountdown');
+    await page.waitForTimeout(9000);
+  }
 
   // Game polls input per frame; with software GL a press must be held across frames.
   const click = async (x, y, wait = 2500) => {
@@ -259,7 +265,7 @@ exports.launch = async ({
     return manifest;
   };
 
-  return { browser, page, logs, rawLogs, click, shot, chat, render, glStats, probe, enterWorld, skipFirstRun, getState, setCamera,
+  return { browser, context, t0, tGoto, page, logs, rawLogs, click, shot, chat, render, glStats, probe, enterWorld, skipFirstRun, getState, setCamera,
     waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, warmPath, diffPct, vtEnable, vtDisable, vtStep, clearsNow, captureVideoFrames };
 };
 
