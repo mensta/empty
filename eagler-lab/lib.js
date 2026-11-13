@@ -224,8 +224,41 @@ exports.launch = async ({
     return manifest;
   };
 
+  // ---- G2 with virtual time: a video frame = pose + 1/fps of game time. Each frame: set the pose, advance the
+  // virtual clock by 1000/fps and let the game run >= 1 frame, then take one still. Client-side animation (clouds,
+  // water/lava textures, particles, client ticks) advances 20 ticks per virtual second whatever the frame count
+  // (measured, FINDINGS.md section 11). Server-side things (mobs, world time) keep real time: use freezeWorld().
+  // Client ticks only run when the clock advances, and the server judges movement per client packet, so a path
+  // that moves more than `maxBlocksPerFrame` blocks per frame is refused up front.
+  const captureVideoFrames = async (pathFn, frames, outDir, { fps = 30, prefix = 'v-', start = 0, settleClears = 20, maxBlocksPerFrame = 4 } = {}) => {
+    fs.mkdirSync(outDir, { recursive: true });
+    const manifestFile = path.join(outDir, 'manifest.json');
+    const manifest = fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : { fps, note: 'Frames were drawn one at a time on software GL with a virtual clock; playback speed is set by fps, not by the real game.', frames: [] };
+    let prev = null;
+    for (let i = 0; i < frames; i++) {                       // validate the whole path first
+      const p = pathFn(frames > 1 ? i / (frames - 1) : 0);
+      if (prev) { const d = Math.hypot(p[0] - prev[0], p[1] - prev[1], p[2] - prev[2]); if (d > maxBlocksPerFrame) throw new Error(`frame ${i}: ${d.toFixed(2)} blocks/frame > ${maxBlocksPerFrame}; slow the path or use more frames`); }
+      prev = p;
+    }
+    await vtEnable();
+    try {
+      for (let i = start; i < frames; i++) {
+        const file = path.join(outDir, `${prefix}${pad(i)}.png`);
+        if (fs.existsSync(file) && manifest.frames.some((m) => m.i === i)) continue;
+        const pose = pathFn(frames > 1 ? i / (frames - 1) : 0), t0 = Date.now();
+        await setCamera(...pose);
+        const adv = await vtStep(1000 / fps);
+        const cap = await captureFrame(file, { settleClears, stable: false });
+        const got = await getState();
+        manifest.frames = manifest.frames.filter((m) => m.i !== i).concat([{ i, file: path.basename(file), pose, got, advClears: adv, clears: cap.clears, ms: Date.now() - t0 }]);
+        if (i % 10 === 0 || i === frames - 1) fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 1));
+      }
+    } finally { await vtDisable(); fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 1)); }
+    return manifest;
+  };
+
   return { browser, page, logs, rawLogs, click, shot, chat, render, glStats, probe, enterWorld, skipFirstRun, getState, setCamera,
-    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, warmPath, diffPct, vtEnable, vtDisable, vtStep, clearsNow };
+    waitChunks, hideHud, showHud, dismissHints, setResolution, freezeWorld, teleport, moveSafe, captureFrame, captureSequence, warmPath, diffPct, vtEnable, vtDisable, vtStep, clearsNow, captureVideoFrames };
 };
 
 // Camera-path helpers for captureSequence
