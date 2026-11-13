@@ -41,6 +41,10 @@
     } catch (e) { /* never break the game */ }
     return oSrc.apply(this, arguments);
   };
+  // WebGL extensions the game asks for (R9)
+  st.extensions = [];
+  const oExt = proto.getExtension;
+  proto.getExtension = function (name) { const r = oExt.apply(this, arguments); st.extensions.push([name, !!r]); return r; };
   const oCreate = proto.createProgram;
   proto.createProgram = function () { st.createdPrograms++; return oCreate.apply(this, arguments); };
   const oLink = proto.linkProgram;

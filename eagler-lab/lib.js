@@ -38,8 +38,12 @@ exports.launch = async ({ html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS 
   const glStats = () => page.evaluate(() => { const g = window.__gl; return { on: g.on, passed: g.passed, skipped: g.skipped, frames: g.frames }; });
 
   // 1.8.8 first-run screens + fixed-seed cheat world (coordinates measured at 1280x720)
-  const enterWorld = async (seed = 'eagler') => {
-    await click(640, 563); await click(640, 653, 5000); await click(640, 575, 4000); // warnings, profile, username
+  // first-run screens appear in a slightly varying order, so run the (harmless-on-title) pass twice
+  const skipFirstRun = async () => {
+    for (let pass = 0; pass < 2; pass++) { await click(640, 563); await click(640, 653, 5000); await click(640, 575, 4000); }
+  };
+  const enterWorld = async (seed = 'eagler', { first = true } = {}) => {
+    if (first) await skipFirstRun();
     await click(640, 353, 4000); await click(875, 593, 4000); await click(640, 329, 4000); // SP > create
     await click(640, 590, 3000);                       // More World Options
     await click(640, 210, 500); await page.keyboard.type(seed, { delay: 80 });
@@ -61,5 +65,5 @@ exports.launch = async ({ html = DEFAULT_HTML, shots = process.env.EAGLER_SHOTS 
     e.D = e.fS = e.mT = x; e.J = e.gr = e.l2 = y; e.E = e.fT = e.mU = z;
     e.bN = e.hq = yaw; e.cR = e.ip = pitch;
   }, [x, y, z, yaw, pitch]);
-  return { browser, page, logs, click, shot, chat, render, glStats, enterWorld, getState, setCamera };
+  return { browser, page, logs, click, shot, chat, render, glStats, enterWorld, skipFirstRun, getState, setCamera };
 };
