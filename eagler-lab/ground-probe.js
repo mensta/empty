@@ -1,4 +1,4 @@
-// Probe ground height: put the player in survival mode high above (x,z), let gravity drop it, read the settled y.
+// Probe ground height: put the player in survival mode with the Resistance effect (gravity applies, no fall damage; creative mode keeps the player flying) high above (x,z), let gravity drop it, read the settled y.
 // Also takes an eye-level still looking along YAW. usage: PTS="x,z;x,z" [YAW=180] [DROP=140] [STILLS=1] EAGLER_HTML=... EAGLER_SHOTS=... node ground-probe.js
 const L = require('./lib.js');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const fs = require('fs');
   await render(false);
   const res = [];
   for (const [x, z] of pts) {
-    await chat('/gamemode survival');
+    await chat('/gamemode survival'); await chat('/effect @p resistance 1000 10');
     await chat(`/tp @p ${x + 0.5} ${DROP} ${z + 0.5} ${YAW} 0`);
     await waitChunks({ quietMs: 3000, minMs: 4000, maxMs: 90000 });
     let last = null, same = 0, s;
