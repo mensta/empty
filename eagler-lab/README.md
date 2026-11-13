@@ -40,7 +40,9 @@ Env: `EAGLER_HTML` (patched copy), `EAGLER_SHOTS` (output dir), `EAGLER_LOG` (fu
   real game's speed. Simulation still ticks at 20 TPS in real time.
 - **Chunks stream in around the player only**, and JS world generation is slow. A still can look "stable"
   while distant terrain is missing. Always `warmPath` the route first, then capture.
-- **PBR frames never become static** (clouds, temporal effects): compare terrain only, or accept drift.
+- **PBR is slow but does settle**: with a warmed route and >= 60 clears, two PBR stills ~90 s apart differed in
+  0.23% of pixels. A first attempt that looked unstable (24%) was an under-loaded world, not PBR. Plain stills keep
+  ~1% drift from moving clouds; compare terrain only (`diffPct(a, b, [0.45, 1])`) when checking repeatability.
 - Position writes: small steps are accepted by the integrated server; 40+ block jumps are reverted.
 - Field names (`D/J/E`, `bN/cR`, `dz`, ...) and the hook only fit the build with sha256
   `8d7b926f5488baba...` (EaglercraftX 1.8-u53 JS). `patch-hook.js` finds the singleton itself, but the

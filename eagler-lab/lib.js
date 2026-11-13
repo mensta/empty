@@ -166,11 +166,12 @@ exports.launch = async ({
   // sections per frame, so right after a move the terrain may be missing (seen: a sky-only first frame).
   // With stable:true (default) we shoot repeatedly until two consecutive shots differ in <= tolPct of the
   // pixels, and report whether that happened. "settleClears" counts gl.clear calls (~8-10 per game frame).
-  // PBR never becomes fully static (clouds / temporal effects): pass {stableAttempts: 1} there.
+  // Each PBR shot takes 60-140 s, so use stable:false there. With a warmed route and >= 60 clears two PBR shots
+  // taken ~90 s apart differed in only 0.23% of pixels (FINDINGS.md section 10). `stable` is null when not checked.
   const captureFrame = async (file, { settleClears = 40, maxMs = 300000, keepOn = false, stable = true, tolPct = 1.0, stableAttempts = 5 } = {}) => {
     const before = await glStats();
     await render(true);
-    const t = Date.now(); let prev = null, buf = null, pct = null, attempts = 0, isStable = !stable, clears = 0;
+    const t = Date.now(); let prev = null, buf = null, pct = null, attempts = 0, isStable = stable ? false : null, clears = 0;
     while (attempts < (stable ? stableAttempts : 1) && Date.now() - t < maxMs) {
       attempts++;
       await page.evaluate(() => window.__gl.reset());

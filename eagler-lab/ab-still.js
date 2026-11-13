@@ -1,8 +1,8 @@
 // Same-pose still for PBR on/off. PBR=1 enables the built-in shader pack from Options first.
 // Order: world setup with the draw gate OFF (chat works even when PBR would run at ~1 fps) ->
 // warm pass over a route around the pose (terrain streams in around where the player is) ->
-// back to the pose -> captureFrame. Plain: shoot until stable. PBR: never static (clouds, temporal
-// effects), so shoot SHOTS times and keep all of them.
+// back to the pose -> captureFrame. Plain: shoot until stable (clouds drift, so ~1% remains). PBR: each
+// shot takes 60-140 s, so no stability loop; shoot SHOTS times and keep all of them to compare.
 // usage: PBR=0|1 EAGLER_HTML=<hook-patched copy> EAGLER_SHOTS=<dir> node ab-still.js
 const L = require('./lib.js');
 const PBR = process.env.PBR === '1';

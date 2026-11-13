@@ -167,8 +167,16 @@ structure is one thing; showing assets at length or pointing to a download is th
   difference between a frame and a later frame at the same pose is **0.000%** once the route has been warmed;
   the remaining ~2.7% of the whole image is cloud drift. `waitChunks` (no `bufferData` for 3 s) returned
   "quiet" too early, so it is only a hint.
-- **Earlier PBR on/off stills** were taken before this was understood and likely show a partially loaded
-  world; they are superseded by the re-shot set (same pose, warmed route).
+- **Earlier PBR on/off stills** were taken before this was understood and show a partially loaded world; they
+  also made PBR look temporally unstable (24.5% of pixels differing between two shots). That conclusion was
+  wrong. Superseded by the re-shot set below.
+- **Same-pose PBR on/off stills (re-shot, warmed route, 1280x720, seed `eagler`, noon, clear, HUD hidden)**:
+  pose `[100.5, 100, 200.5, yaw 45, pitch 10]` reached on both runs. Plain vs PBR: 63% of all pixels and
+  **69.8% of the terrain region differ** (PBR: tone-mapped muted colours, hazy atmospheric sky and fog,
+  soft cloud, different shading; geometry identical). Two PBR shots ~90 s apart: **0.23%** whole image /
+  0.42% terrain differ, so PBR does settle given enough frames (>= 60 clears). Plain stills keep ~1% drift from
+  clouds (5 attempts ended at 1.02%). Under PBR `waitChunks` never reports quiet (buffer uploads continue), so
+  that heuristic is meaningless there; the warm pass with drawing off is what loads the terrain.
 - **Capture cost**: a plain still takes ~2-15 s per attempt, usually 2-5 attempts; a 5-frame orbit with a
   warm pass took ~6 min; a 1920x1080 still ~40 s. PBR stills take 100+ s each.
 - **Server-accepted camera moves**: a 5-frame orbit (18 sub-steps of <= 2 blocks per leg, 120 ms apart)
