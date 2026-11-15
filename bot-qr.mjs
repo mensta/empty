@@ -39,11 +39,11 @@ setInterval(async () => {
 	for (const f of fs.readdirSync("./outbox").filter((n) => n.endsWith(".json"))) {
 		const path = `./outbox/${f}`;
 		try {
-			const { to, text } = JSON.parse(fs.readFileSync(path, "utf8"));
-			await client.base.talk.sendMessage({ to, text, e2ee: true });
+			const { to, text, e2ee = true } = JSON.parse(fs.readFileSync(path, "utf8"));
+			await client.base.talk.sendMessage({ to, text, e2ee });
 			console.log("送信:", to);
 		} catch (e) {
-			console.error("送信失敗:", f, e.message);
+			console.error("送信失敗:", f, e?.constructor?.name, e?.message ?? e, JSON.stringify(e?.data ?? null));
 		}
 		fs.renameSync(path, `./outbox/sent/${f}`);
 	}
