@@ -145,16 +145,29 @@ Format: file | page URL | what is cropped | quoted text visible | view / notes
 
 ## Picture requests (the separate "image search" list) - status 2026-11-15, no pictures delivered yet
 
-No file in `images/` exists yet. What was tried and what was found:
+One file is delivered so far in `images/` (below); everything else on the list is not found. What was tried and what was found:
+
+### Delivered: `images/jailbreakme-3.0-desktop-page.png`
+
+- **What it really shows (the image was opened and checked):** the JailbreakMe **3.0** web page as seen in a *desktop* browser: Cydia icon (brown box), "Cydia - Jay Freeman (saurik) - Jailbreak by comex.", a red line "Come back on your iPhone, iPad, or iPod touch to use JailbreakMe - or use a different jailbreak on your computer.", the JailbreakMe description text and the credit line ("brought to you by comex, with the help of Grant Paul (chpwn), Jay Freeman (saurik), MuscleNerd, and many others"). No faces or photos of people.
+- **Version / date:** it is the **3.0** page (second choice in the request), **not 1.0 (2007)**. The Commons file page gives the date 2 February 2013, which is the date of the screenshot/upload, not the release of JailbreakMe 3.0 (2010). The iOS version or browser used is not stated.
+- **Size:** 1920 x 619 px PNG, the natural size of the original (not resized, not upscaled).
+- **Source page:** https://commons.wikimedia.org/wiki/File:JailbreakMe_3.0.png
+- **Image URL:** https://upload.wikimedia.org/wikipedia/commons/c/c6/JailbreakMe_3.0.png
+- **Licence / author:** CC BY-SA 3.0 Unported, author **Yanenming** ("Own work"). Attribution line for use: "Yanenming, CC BY-SA 3.0, via Wikimedia Commons". Share-alike applies to changed versions.
+- **Downloaded:** 2026-11-15 (UTC), one polite request after an HTTP 429 with Retry-After 600 s.
+- Note: the page itself is a screenshot of third-party software (JailbreakMe/Cydia branding); the CC licence is the uploader's.
+
+### Tried and found (rest of the list)
 
 - **Bing image search is not usable for these topics from this environment.** For niche queries it returns unrelated pictures (checked on 2026-11-15):
   "Cydia ... screenshot" gave cats and a cartoon, "evasi0n ..." gave Blue Lock anime, "JailbreakMe 1.0" gave a Nissan Skyline, "Installer.app iPhone 2007" gave water bottles,
   "Pangu jailbreak tool" gave Chinese myth art, "Zerodium payout chart" gave a film. All of it was discarded; nothing from it is in this repository. (Only very common queries such as "mount fuji" work.)
 - **Other routes from here:** web.archive.org is blocked (not worked around); The Apple Wiki is behind a Cloudflare challenge (403, not bypassed); Wikimedia Commons search and file pages load, but the original
   files on upload.wikimedia.org return HTTP 429 for this IP, so no Commons image could be downloaded or looked at.
-- **Commons candidates, from the file pages only (the images themselves were NOT viewed, so what they really show is unconfirmed):**
+- **Commons candidates, from the file pages only (the images themselves were NOT viewed, so what they really show is unconfirmed; the original download of these two still returned HTTP 429 on 2026-11-15 08:36 UTC):**
   - `File:Cydia Reviews.jpg` - 1920 x 1080, description "Cydia (World Reviews)", date 3 April 2013, CC BY-SA 4.0, author ReflectionWiki - https://commons.wikimedia.org/wiki/File:Cydia_Reviews.jpg
-  - `File:JailbreakMe 3.0.png` - 1920 x 619, description "JailbreakMe 3.0", date 2 February 2013, CC BY-SA 3.0, author Yanenming (a 3.0 item, the second choice, not 1.0) - https://commons.wikimedia.org/wiki/File:JailbreakMe_3.0.png
+  - `File:JailbreakMe 3.0.png` - DELIVERED, see above.
   - `File:IPad Air Evasi0n.jpeg` - 1936 x 2592, "Evasi0n jailbreak on an iPad Air" (German description), date 31 December 2013, CC BY-SA 3.0 DE and 3.0, author Jojhnjoy, a photo of a device - https://commons.wikimedia.org/wiki/File:IPad_Air_Evasi0n.jpeg
   - Logos only: `File:Checkra1n icon logo.png` (256 x 256), `File:Unc0ver.jpg` (230 x 227, CC BY-SA 4.0, JailbreaK20).
 - **Not found** (no usable result from any reachable source): old Cydia UI 2008-2011 (every Commons Cydia screenshot found is dated 2026-08-07, so none was used), Cydia Store listing, JailbreakMe 1.0, Installer.app,
