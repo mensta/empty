@@ -3,3 +3,5 @@ node_modules/
 session.json
 storage.json
 line-qr.png
+inbox.jsonl
+outbox/
