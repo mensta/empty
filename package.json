@@ -4,7 +4,8 @@
   "description": "empty repo",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.mjs"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
   "type": "module",
   "private": "true",
   "dependencies": {
-    "@evex-dev/linejs": "^3.6.5"
+    "@evex-dev/linejs": "^3.6.5",
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4"
   }
 }

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LINE サブ垢コンソール</title>
+<style>
+  :root { --bg:#f4f6f8; --card:#fff; --line:#06c755; --text:#1f2933; --sub:#6b7785; --bd:#dde3e9; --mine:#d6f5df; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14181c; --card:#1d2329; --text:#e6eaee; --sub:#93a0ad; --bd:#2c353d; --mine:#1f4d33; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif; background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--card); border-bottom:1px solid var(--bd); }
+  header h1 { font-size:15px; margin:0; flex:1; }
+  header .me { color:var(--sub); font-size:12px; }
+  button { font:inherit; border:1px solid var(--bd); background:var(--card); color:var(--text); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  button.primary { background:var(--line); border-color:var(--line); color:#fff; }
+  button:disabled { opacity:.5; cursor:default; }
+  input[type=text], textarea { font:inherit; width:100%; padding:8px 10px; border:1px solid var(--bd); border-radius:8px; background:var(--card); color:var(--text); }
+  main { display:grid; grid-template-columns: 280px 1fr; height: calc(100vh - 51px); }
+  #chats { border-right:1px solid var(--bd); overflow:auto; background:var(--card); }
+  .chat { padding:10px 14px; border-bottom:1px solid var(--bd); cursor:pointer; display:flex; gap:8px; align-items:center; }
+  .chat:hover, .chat.on { background:var(--bg); }
+  .chat .n { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .badge { background:var(--line); color:#fff; border-radius:10px; padding:0 7px; font-size:11px; }
+  #pane { display:flex; flex-direction:column; min-width:0; }
+  #msgs { flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .m { max-width:72%; padding:8px 11px; border-radius:12px; background:var(--card); border:1px solid var(--bd); white-space:pre-wrap; word-break:break-word; }
+  .m.mine { align-self:flex-end; background:var(--mine); border-color:transparent; }
+  .m time { display:block; font-size:10px; color:var(--sub); margin-top:2px; }
+  #composer { display:flex; gap:8px; padding:10px; border-top:1px solid var(--bd); background:var(--card); }
+  .empty { margin:auto; color:var(--sub); }
+  .center { max-width:420px; margin:48px auto; padding:0 16px; text-align:center; }
+  .center img { width:260px; height:260px; image-rendering:pixelated; background:#fff; border-radius:8px; }
+  .pin { font-size:34px; letter-spacing:6px; font-weight:700; margin:8px 0; }
+  dialog { border:1px solid var(--bd); border-radius:12px; background:var(--card); color:var(--text); width:min(440px, 92vw); }
+  dialog::backdrop { background:rgba(0,0,0,.4); }
+  .drop { border:2px dashed var(--bd); border-radius:10px; padding:14px; text-align:center; color:var(--sub); margin:10px 0; }
+  .drop.over { border-color:var(--line); }
+  .row { display:flex; gap:8px; margin:8px 0; }
+  .note { color:var(--sub); font-size:12px; }
+  .err { color:#d64545; }
+  @media (max-width:700px){ main{grid-template-columns:1fr; height:auto;} #chats{max-height:34vh;border-right:0;border-bottom:1px solid var(--bd);} #pane{height:60vh;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>LINE サブ垢コンソール</h1>
+  <span class="me" id="me"></span>
+  <button id="btnAdd" hidden>友だち追加</button>
+  <button id="btnMy" hidden>自分の QR</button>
+</header>
+<div id="root"></div>
+
+<dialog id="dlgAdd">
+  <h3 style="margin-top:0">友だち追加</h3>
+  <div class="note">URL・@ID・友だち追加 URL を貼るか、QR 画像をドロップ(または選択)してください。</div>
+  <div class="drop" id="drop">QR 画像をここへドロップ / <label style="text-decoration:underline;cursor:pointer">選択<input type="file" id="file" accept="image/*" hidden></label></div>
+  <div class="row"><input type="text" id="addInput" placeholder="@zozotown / https://line.me/ti/p/..."><button id="btnLookup">検索</button></div>
+  <div id="addResult"></div>
+  <div class="row" style="justify-content:flex-end"><button id="addClose">閉じる</button></div>
+</dialog>
+
+<dialog id="dlgMy">
+  <h3 style="margin-top:0">自分の友だち追加 QR</h3>
+  <div style="text-align:center"><img id="myImg" width="260" height="260" alt="QR" style="background:#fff;border-radius:8px"></div>
+  <p class="note" id="myUrl" style="word-break:break-all"></p>
+  <div class="note">この URL を知っていれば誰でも追加できます。公開の場には載せないでください。</div>
+  <div class="row" style="justify-content:flex-end"><button id="myClose">閉じる</button></div>
+</dialog>
+
+<script src="/jsqr.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const root = $("#root");
+let status = "", current = null, lastChatsKey = "", lastMsgsKey = "";
+
+async function api(path, body) {
+  const opt = body === undefined ? {} : { method: "POST", headers: { "x-requested-with": "ui", "content-type": "application/json" }, body: JSON.stringify(body) };
+  const r = await fetch(path, opt);
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (t) => new Date(t).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+function renderLogin(s) {
+  const key = JSON.stringify([s.status, !!s.qr, s.pin, s.error]);
+  if (renderLogin.key === key) return;
+  renderLogin.key = key;
+  if (s.status === "qr") {
+    root.innerHTML = `<div class="center"><h3>QR ログイン</h3>
+      ${s.qr ? `<img src="${s.qr}" alt="QR">` : "<p>QR を生成中…</p>"}
+      <p class="note">別の端末にこの画面を表示し、サブ機の LINE の QR コードリーダーで読み取ってください。</p>
+      ${s.pin ? `<p>サブ機の LINE アプリで次の PIN を入力:</p><div class="pin">${esc(s.pin)}</div>` : ""}</div>`;
+  } else if (s.status === "starting") {
+    root.innerHTML = `<div class="center"><p>起動中…</p></div>`;
+  } else {
+    root.innerHTML = `<div class="center"><h3>ログインしていません</h3>
+      ${s.error ? `<p class="err">${esc(s.error)}</p>` : ""}
+      <button class="primary" id="btnLogin">QR ログインを開始</button></div>`;
+    $("#btnLogin").onclick = () => api("/api/login/qr", {}).then(poll);
+  }
+}
+
+function renderApp() {
+  if ($("#chats")) return;
+  renderLogin.key = "";
+  root.innerHTML = `<main><div id="chats"></div><div id="pane">
+    <div id="msgs"><div class="empty">左からチャットを選んでください</div></div>
+    <div id="composer" hidden><textarea id="text" rows="2" placeholder="メッセージ(Ctrl/⌘+Enter で送信)"></textarea><button class="primary" id="btnSend">送信</button></div>
+  </div></main>`;
+  $("#btnSend").onclick = send;
+  $("#text").addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
+}
+
+async function refreshChats() {
+  const chats = await api("/api/chats");
+  const key = JSON.stringify(chats);
+  if (key === lastChatsKey) return;
+  lastChatsKey = key;
+  $("#chats").innerHTML = chats.map((c) => `<div class="chat ${c.mid === current ? "on" : ""}" data-mid="${esc(c.mid)}"><span class="n">${esc(c.name)}</span>${c.unread ? `<span class="badge">${c.unread}</span>` : ""}</div>`).join("") || `<div class="empty" style="padding:16px">チャットはまだありません</div>`;
+  document.querySelectorAll(".chat").forEach((el) => (el.onclick = () => { current = el.dataset.mid; lastChatsKey = ""; lastMsgsKey = ""; refreshChats(); refreshMsgs(true); }));
+}
+
+async function refreshMsgs(scroll) {
+  if (!current) return;
+  const msgs = await api("/api/messages?mid=" + encodeURIComponent(current));
+  const key = JSON.stringify(msgs);
+  if (key === lastMsgsKey) return;
+  lastMsgsKey = key;
+  const box = $("#msgs");
+  const atBottom = scroll || box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  box.innerHTML = msgs.map((m) => `<div class="m ${m.mine ? "mine" : ""}">${esc(m.text)}<time>${fmt(m.time)}</time></div>`).join("") || `<div class="empty">メッセージはありません</div>`;
+  if (atBottom) box.scrollTop = box.scrollHeight;
+  $("#composer").hidden = false;
+}
+
+async function send() {
+  const t = $("#text").value.trim();
+  if (!t || !current) return;
+  $("#btnSend").disabled = true;
+  try { await api("/api/send", { to: current, text: t }); $("#text").value = ""; await refreshMsgs(true); }
+  catch (e) { alert("送信に失敗: " + e.message); }
+  $("#btnSend").disabled = false;
+}
+
+async function poll() {
+  try {
+    const s = await api("/api/state");
+    $("#me").textContent = s.me?.name ? `ログイン中: ${s.me.name}` : "";
+    const ready = s.status === "ready";
+    $("#btnAdd").hidden = $("#btnMy").hidden = !ready;
+    if (ready) { renderApp(); await refreshChats(); await refreshMsgs(); } else { renderLogin(s); }
+    status = s.status;
+  } catch (e) { /* サーバー停止中など */ }
+}
+setInterval(poll, 3000); poll();
+
+// ---- 友だち追加 ----
+$("#btnAdd").onclick = () => { $("#addResult").innerHTML = ""; $("#dlgAdd").showModal(); };
+$("#addClose").onclick = () => $("#dlgAdd").close();
+$("#btnLookup").onclick = lookup;
+$("#addInput").addEventListener("keydown", (e) => { if (e.key === "Enter") lookup(); });
+async function lookup() {
+  const input = $("#addInput").value.trim();
+  if (!input) return;
+  $("#addResult").innerHTML = "検索中…";
+  try {
+    const f = await api("/api/friend/lookup", { input });
+    $("#addResult").innerHTML = `<div class="m"><b>${esc(f.name)}</b>${f.buddy ? " (公式アカウント)" : ""}<br><span class="note">${esc(f.status)}</span><br><span class="note">関係: ${esc(f.relation || "-")}</span></div>
+      <div class="row" style="justify-content:flex-end"><button class="primary" id="doAdd">この相手を友だち追加</button></div>`;
+    $("#doAdd").onclick = async () => {
+      $("#doAdd").disabled = true;
+      try { await api("/api/friend/add", { mid: f.mid }); $("#addResult").innerHTML = `<p>✅ 追加しました: ${esc(f.name)}</p>`; lastChatsKey = ""; }
+      catch (e) { $("#addResult").innerHTML = `<p class="err">追加に失敗: ${esc(e.message)}</p>`; }
+    };
+  } catch (e) { $("#addResult").innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+}
+function decodeFile(file) {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+    const ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0);
+    const code = jsQR(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
+    if (!code) { $("#addResult").innerHTML = `<p class="err">QR を読み取れませんでした</p>`; return; }
+    $("#addInput").value = code.data; lookup();
+  };
+  img.src = URL.createObjectURL(file);
+}
+$("#file").onchange = (e) => e.target.files[0] && decodeFile(e.target.files[0]);
+const drop = $("#drop");
+drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove("over"); e.dataTransfer.files[0] && decodeFile(e.dataTransfer.files[0]); };
+
+// ---- 自分の QR ----
+$("#btnMy").onclick = async () => {
+  try { const { url } = await api("/api/myurl"); $("#myUrl").textContent = url; $("#myImg").src = "/api/myqr.png?" + Date.now(); $("#dlgMy").showModal(); }
+  catch (e) { alert(e.message); }
+};
+$("#myClose").onclick = () => $("#dlgMy").close();
+</script>
+</body>
+</html>
