@@ -5,3 +5,5 @@ storage.json
 line-qr.png
 inbox.jsonl
 outbox/
+friend-url.txt
+friend-qr.png
