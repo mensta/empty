@@ -1,0 +1,25 @@
+{
+  "name": "linejs-sub-bot",
+  "version": "1.0.0",
+  "description": "empty repo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mensta/empty.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mensta/empty/issues"
+  },
+  "homepage": "https://github.com/mensta/empty#readme",
+  "type": "module",
+  "private": "true",
+  "dependencies": {
+    "@evex-dev/linejs": "^3.6.5"
+  }
+}
