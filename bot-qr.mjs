@@ -8,7 +8,7 @@ const opts = { device: "ANDROIDSECONDARY", storage };
 const saved = await storage.get("userAuthToken");
 const client =
 	typeof saved === "string" && saved
-		? await loginWithAuthToken(saved, { ...opts, device: "IOSIPAD" })
+		? await loginWithAuthToken(saved, opts)
 		: await loginWithQR(
 				{
 					onReceiveQRUrl: (url) => console.log("QR_URL:", url),

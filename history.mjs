@@ -8,7 +8,7 @@ const storage = new FileStorage("./session.json");
 const token = await storage.get("userAuthToken");
 if (!token) throw new Error("session.json がありません。先に bot-qr.mjs でログインしてください");
 
-const client = await loginWithAuthToken(token, { device: "IOSIPAD", storage });
+const client = await loginWithAuthToken(token, { device: "ANDROIDSECONDARY", storage });
 const chats = await client.fetchJoinedChats();
 
 const [idx, limit = "20"] = process.argv.slice(2);
