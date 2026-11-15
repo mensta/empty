@@ -140,3 +140,24 @@ Format: file | page URL | what is cropped | quoted text visible | view / notes
 - **usbliter8 repo (2026-06)** - the two GitHub URLs given in press coverage (prdgmshift/usbliter8, paradigmshift/usbliter8-poc) both return 404, so the repository was not identified.
 - **Kaspersky slide about the six unknown hardware registers** - the slide is in the 37C3 talk, not on a page; Kaspersky's blog post about the talk has no such slide and does not state the number six. Not captured.
 - **Redmond Pie** (item 5) - no matching article found.
+
+---
+
+## Picture requests (the separate "image search" list) - status 2026-11-15, no pictures delivered yet
+
+No file in `images/` exists yet. What was tried and what was found:
+
+- **Bing image search is not usable for these topics from this environment.** For niche queries it returns unrelated pictures (checked on 2026-11-15):
+  "Cydia ... screenshot" gave cats and a cartoon, "evasi0n ..." gave Blue Lock anime, "JailbreakMe 1.0" gave a Nissan Skyline, "Installer.app iPhone 2007" gave water bottles,
+  "Pangu jailbreak tool" gave Chinese myth art, "Zerodium payout chart" gave a film. All of it was discarded; nothing from it is in this repository. (Only very common queries such as "mount fuji" work.)
+- **Other routes from here:** web.archive.org is blocked (not worked around); The Apple Wiki is behind a Cloudflare challenge (403, not bypassed); Wikimedia Commons search and file pages load, but the original
+  files on upload.wikimedia.org return HTTP 429 for this IP, so no Commons image could be downloaded or looked at.
+- **Commons candidates, from the file pages only (the images themselves were NOT viewed, so what they really show is unconfirmed):**
+  - `File:Cydia Reviews.jpg` - 1920 x 1080, description "Cydia (World Reviews)", date 3 April 2013, CC BY-SA 4.0, author ReflectionWiki - https://commons.wikimedia.org/wiki/File:Cydia_Reviews.jpg
+  - `File:JailbreakMe 3.0.png` - 1920 x 619, description "JailbreakMe 3.0", date 2 February 2013, CC BY-SA 3.0, author Yanenming (a 3.0 item, the second choice, not 1.0) - https://commons.wikimedia.org/wiki/File:JailbreakMe_3.0.png
+  - `File:IPad Air Evasi0n.jpeg` - 1936 x 2592, "Evasi0n jailbreak on an iPad Air" (German description), date 31 December 2013, CC BY-SA 3.0 DE and 3.0, author Jojhnjoy, a photo of a device - https://commons.wikimedia.org/wiki/File:IPad_Air_Evasi0n.jpeg
+  - Logos only: `File:Checkra1n icon logo.png` (256 x 256), `File:Unc0ver.jpg` (230 x 227, CC BY-SA 4.0, JailbreaK20).
+- **Not found** (no usable result from any reachable source): old Cydia UI 2008-2011 (every Commons Cydia screenshot found is dated 2026-08-07, so none was used), Cydia Store listing, JailbreakMe 1.0, Installer.app,
+  evasi0n7 window, Pangu / PP / TaiG tool windows, checkra1n / palera1n / unc0ver / Dopamine app screens (the site captures `b01`, `b02`, `01a`, `01b` are page captures, not app screens),
+  the 2007 iPhone with AT&T, iPhone 3G / 4 / 5s / X photos, Apple keynote slides or press images, Zerodium payout chart, Operation Zero announcement image, Kaspersky 37C3 / Securelist figures, PAC / KTRR / PPL / SPTM diagrams.
+- To finish this list, an environment that reaches web.archive.org and a working image search (or a person) is needed. Specific image URLs can be fetched and recorded if supplied.
