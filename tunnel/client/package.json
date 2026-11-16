@@ -1,0 +1,10 @@
+{
+  "name": "vm-relay-client",
+  "private": true,
+  "type": "module",
+  "bin": { "expose": "./expose.mjs" },
+  "dependencies": {
+    "https-proxy-agent": "^7",
+    "ws": "^8"
+  }
+}

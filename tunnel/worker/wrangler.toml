@@ -1,0 +1,18 @@
+name = "vm-relay"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+[[durable_objects.bindings]]
+name = "RELAY"
+class_name = "Relay"
+
+# 無料プランでは SQLite 型の Durable Object だけが使える
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Relay"]
+
+# 秘密の値は wrangler.toml に書かない。ダッシュボードの Settings → Variables and Secrets、
+# または `wrangler secret put` で設定する:
+#   TUNNEL_KEY   (Secret) VM からの接続用の合言葉
+#   ACCESS_TEAM  (Text)   例: myteam.cloudflareaccess.com
+#   ACCESS_AUD   (Text)   Access アプリケーションの Application Audience (AUD) Tag
